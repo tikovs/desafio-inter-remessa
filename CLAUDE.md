@@ -131,6 +131,18 @@ Isso vale tanto pra `domain` (ex: `Money`, validators) quanto pra `application` 
 - Testes unitários **e** testes de integração são item de avaliação — priorizar o core (Money, validators, RemessaService) antes dos diferenciais, mas sem pular a escrita do teste de integração quando o componente envolver algo externo (API do BCB, banco).
 - Primeiro teste a escrever: direção da conversão de moeda (`R$ 543,00 / 5,43 = US$ 100,00`) — pega erro de inversão da fórmula na hora.
 
+### Convenção de nomenclatura
+
+- Idioma: **inglês** em tudo — nome do método, `@DisplayName`, variáveis locais do teste.
+- Padrão do nome do método: `should<ExpectedBehavior>When<Condition>`.
+- `@DisplayName` em inglês, descrevendo o comportamento em linguagem natural.
+
+```java
+@Test
+@DisplayName("Should convert R$ 543.00 to US$ 100.00 when exchange rate is 5.43")
+void shouldConvertReaisToDollarsWhenExchangeRateIsValid() { ... }
+```
+
 ## Diferenciais (prioridade baixa, só se sobrar tempo)
 
 - Testes de integração
