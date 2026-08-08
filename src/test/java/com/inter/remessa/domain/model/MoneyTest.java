@@ -22,4 +22,11 @@ class MoneyTest {
         Money result = Money.ofReais(new BigDecimal("10.50")).add(Money.ofReais(new BigDecimal("5.25")));
         assertThat(result).isEqualTo(Money.ofReais(new BigDecimal("15.75")));
     }
+
+    @Test
+    @DisplayName("Should return difference when a smaller Money is subtracted from a larger one")
+    void shouldReturnDifferenceWhenSmallerMoneyIsSubtracted() {
+        Money result = Money.ofReais(new BigDecimal("15.75")).subtract(Money.ofReais(new BigDecimal("5.25")));
+        assertThat(result).isEqualTo(Money.ofReais(new BigDecimal("10.50")));
+    }
 }
