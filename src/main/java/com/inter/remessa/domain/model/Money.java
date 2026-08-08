@@ -13,4 +13,8 @@ public record Money(long cents) {
     public Money add(Money other) {
         return new Money(this.cents + other.cents);
     }
+
+    public Money subtract(Money other) {
+        return new Money(this.cents - other.cents);
+    }
 }
