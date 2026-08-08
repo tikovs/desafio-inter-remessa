@@ -15,4 +15,11 @@ class MoneyTest {
         Money money = Money.ofReais(new BigDecimal("10.50"));
         assertThat(money.cents()).isEqualTo(1050L);
     }
+
+    @Test
+    @DisplayName("Should return sum of both amounts when two Money values are added")
+    void shouldReturnSumWhenTwoMoneyValuesAreAdded() {
+        Money result = Money.ofReais(new BigDecimal("10.50")).add(Money.ofReais(new BigDecimal("5.25")));
+        assertThat(result).isEqualTo(Money.ofReais(new BigDecimal("15.75")));
+    }
 }
