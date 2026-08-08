@@ -9,4 +9,8 @@ public record Money(long cents) {
         long centavos = reais.movePointRight(2).setScale(0, RoundingMode.HALF_EVEN).longValueExact();
         return new Money(centavos);
     }
+
+    public Money add(Money other) {
+        return new Money(this.cents + other.cents);
+    }
 }
