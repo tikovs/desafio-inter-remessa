@@ -17,4 +17,8 @@ public record Money(long cents) {
     public Money subtract(Money other) {
         return new Money(this.cents - other.cents);
     }
+
+    public boolean isLessThan(Money other) {
+        return this.cents < other.cents;
+    }
 }
