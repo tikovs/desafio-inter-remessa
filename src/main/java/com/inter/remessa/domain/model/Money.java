@@ -23,10 +23,8 @@ public record Money(long cents) {
     }
 
     public Money convert(BigDecimal exchangeRate) {
-        BigDecimal reais = BigDecimal.valueOf(this.cents).movePointLeft(2);
-        long convertedCents = reais.divide(exchangeRate, 2, RoundingMode.HALF_EVEN)
-                .movePointRight(2)
-                .longValueExact();
-        return new Money(convertedCents);
+        BigDecimal reais = BigDecimal.valueOf(this.cents, 2);
+        BigDecimal dollars = reais.divide(exchangeRate, 2, RoundingMode.HALF_EVEN);
+        return Money.ofReais(dollars);
     }
 }

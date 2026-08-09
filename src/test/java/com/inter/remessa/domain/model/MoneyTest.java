@@ -61,4 +61,13 @@ class MoneyTest {
         Money dollars = reais.convert(new BigDecimal("5.43"));
         assertThat(dollars).isEqualTo(Money.ofReais(new BigDecimal("100.00")));
     }
+
+    @Test
+    @DisplayName("Should round to US$ 18.62 when R$ 100.00 is converted at rate 5.37 (non-exact division)")
+    void shouldRoundCorrectlyWhenDivisionIsNonExact() {
+        // 100.00 / 5.37 = 18.6218... → rounds down to 18.62 (1862 cents)
+        Money reais = Money.ofReais(new BigDecimal("100.00"));
+        Money dollars = reais.convert(new BigDecimal("5.37"));
+        assertThat(dollars).isEqualTo(Money.ofReais(new BigDecimal("18.62")));
+    }
 }
