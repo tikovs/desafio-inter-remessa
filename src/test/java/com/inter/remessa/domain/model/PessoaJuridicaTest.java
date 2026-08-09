@@ -1,21 +1,45 @@
 package com.inter.remessa.domain.model;
 
+import com.inter.remessa.domain.exception.CnpjInvalidoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PessoaJuridicaTest {
 
     @Test
     @DisplayName("Should store name, email, password hash and CNPJ and return JURIDICA type when created with valid data")
     void shouldStoreFieldsAndReturnJuridicaTypeWhenCreatedWithValidData() {
-        PessoaJuridica pessoa = new PessoaJuridica("Empresa XPTO", "contato@xpto.com", "$2a$10$hashedpassword", "12.345.678/0001-90");
+        PessoaJuridica pessoa = new PessoaJuridica("Empresa XPTO", "contato@xpto.com", "$2a$10$hashedpassword", "12345678000190");
 
         assertThat(pessoa.getRazaoSocial()).isEqualTo("Empresa XPTO");
         assertThat(pessoa.getEmail()).isEqualTo("contato@xpto.com");
         assertThat(pessoa.getSenhaHash()).isEqualTo("$2a$10$hashedpassword");
-        assertThat(pessoa.getCnpj()).isEqualTo("12.345.678/0001-90");
+        assertThat(pessoa.getCnpj()).isEqualTo("12345678000190");
         assertThat(pessoa.getTipo()).isEqualTo(TipoPessoa.JURIDICA);
+    }
+
+    @Test
+    @DisplayName("Should accept CNPJ with new alphanumeric format (12 uppercase alphanumeric + 2 digit check digits)")
+    void shouldAcceptCnpjWithNewAlphanumericFormat() {
+        PessoaJuridica pessoa = new PessoaJuridica("Empresa", "e@e.com", "$hash", "ABCDEF12345612");
+
+        assertThat(pessoa.getCnpj()).isEqualTo("ABCDEF12345612");
+    }
+
+    @Test
+    @DisplayName("Should throw CnpjInvalidoException when CNPJ has 13 characters")
+    void shouldThrowCnpjInvalidoExceptionWhenCnpjHas13Characters() {
+        assertThatThrownBy(() -> new PessoaJuridica("Empresa", "e@e.com", "$hash", "1234567800019"))
+                .isInstanceOf(CnpjInvalidoException.class);
+    }
+
+    @Test
+    @DisplayName("Should throw CnpjInvalidoException when CNPJ has 15 characters")
+    void shouldThrowCnpjInvalidoExceptionWhenCnpjHas15Characters() {
+        assertThatThrownBy(() -> new PessoaJuridica("Empresa", "e@e.com", "$hash", "123456780001901"))
+                .isInstanceOf(CnpjInvalidoException.class);
     }
 }
