@@ -32,21 +32,92 @@ class DevDataSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        // PF com R$15.000 — permite testar conversão E limite diário (R$10k)
         Pessoa pf = criarPessoaService.criar(new CriarPessoaFisicaCommand(
                 "João Silva", "joao@example.com", "senha123", "12345678901"));
-        Wallet walletPf = walletRepository.findByPessoaId(pf.getId());
-        walletPf.creditReais(Money.ofReais(new BigDecimal("5000.00")));
-        walletRepository.save(walletPf);
+        credit(pf, "15000.00");
 
+        // PJ com R$55.000 — permite testar limite diário PJ (R$50k)
         Pessoa pj = criarPessoaService.criar(new CriarPessoaJuridicaCommand(
                 "Empresa Teste LTDA", "empresa@example.com", "senha123", "12345678000195"));
-        Wallet walletPj = walletRepository.findByPessoaId(pj.getId());
-        walletPj.creditReais(Money.ofReais(new BigDecimal("20000.00")));
-        walletRepository.save(walletPj);
+        credit(pj, "55000.00");
 
-        log.info("=== DEV DATA ===");
-        log.info("PF id={} email=joao@example.com saldo=R$5.000,00", pf.getId());
-        log.info("PJ id={} email=empresa@example.com saldo=R$20.000,00", pj.getId());
-        log.info("================");
+        // PF destinatário (saldo zero — só recebe)
+        Pessoa dest = criarPessoaService.criar(new CriarPessoaFisicaCommand(
+                "Maria Destino", "maria@example.com", "senha123", "98765432100"));
+
+        // PF sem saldo — para testar erro de saldo insuficiente
+        Pessoa semSaldo = criarPessoaService.criar(new CriarPessoaFisicaCommand(
+                "Carlos Sem Saldo", "carlos@example.com", "senha123", "11122233344"));
+
+        // PJ destinatária — para testar remessa PF→PJ e PJ→PF
+        Pessoa pjDest = criarPessoaService.criar(new CriarPessoaJuridicaCommand(
+                "Empresa Destino SA", "empresadest@example.com", "senha123", "99988877700011"));
+
+        long pfId      = pf.getId();
+        long pjId      = pj.getId();
+        long destId    = dest.getId();
+        long semSaldoId = semSaldo.getId();
+        long pjDestId  = pjDest.getId();
+
+        log.info("");
+        log.info("╔══════════════════════════════════════════════════════════════╗");
+        log.info("║               DADOS DE TESTE — REQUISITOS                   ║");
+        log.info("╠══════════════════════════════════════════════════════════════╣");
+        log.info("║  PF  id={}  joao@example.com          saldo=R$15.000      ║", pfId);
+        log.info("║  PJ  id={}  empresa@example.com        saldo=R$55.000      ║", pjId);
+        log.info("║  PF  id={}  maria@example.com          saldo=R$0 (destino) ║", destId);
+        log.info("║  PF  id={}  carlos@example.com         saldo=R$0 (sem $)   ║", semSaldoId);
+        log.info("║  PJ  id={}  empresadest@example.com    saldo=R$0 (destino) ║", pjDestId);
+        log.info("╠══════════════════════════════════════════════════════════════╣");
+        log.info("║  CURLS PARA TESTAR CADA REQUISITO:                          ║");
+        log.info("║                                                              ║");
+        log.info("║  [REQ 1] Conversão BRL→USD (cotacaoCompra do BCB)           ║");
+        log.info("║  R$500 / cotação ≈ US$xx.xx                                 ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":500}}'", pfId, destId);
+        log.info("║                                                              ║");
+        log.info("║  [REQ 2] Saldo insuficiente → 422                           ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":500}}'", semSaldoId, destId);
+        log.info("║                                                              ║");
+        log.info("║  [REQ 3a] Limite diário PF R$10.000 → 422                  ║");
+        log.info("║  (envie primeiro R$10.000, depois qualquer valor adicional) ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":10000}}'", pfId, destId);
+        log.info("║  # segundo envio (deve retornar 422):                        ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":1}}'", pfId, destId);
+        log.info("║                                                              ║");
+        log.info("║  [REQ 3b] Limite diário PJ R$50.000 → 422                  ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":50000}}'", pjId, destId);
+        log.info("║  # segundo envio (deve retornar 422):                        ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":1}}'", pjId, destId);
+        log.info("║                                                              ║");
+        log.info("║  [REQ 4a] PF → PJ permitido → 201                          ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":100}}'", pfId, pjDestId);
+        log.info("║                                                              ║");
+        log.info("║  [REQ 4b] PJ → PF permitido → 201                          ║");
+        log.info("║  curl -s -X POST http://localhost:8080/remessas \\           ║");
+        log.info("║    -H 'Content-Type: application/json' \\                    ║");
+        log.info("║    -d '{{\"remetenteId\":{},\"destinatarioId\":{},\"valor\":100}}'", pjId, destId);
+        log.info("╚══════════════════════════════════════════════════════════════╝");
+        log.info("");
+    }
+
+    private void credit(Pessoa pessoa, String valor) {
+        Wallet wallet = walletRepository.findByPessoaId(pessoa.getId());
+        wallet.creditReais(Money.ofReais(new BigDecimal(valor)));
+        walletRepository.save(wallet);
     }
 }
