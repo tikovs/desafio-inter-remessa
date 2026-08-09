@@ -19,21 +19,21 @@ class WalletTest {
     }
 
     @Test
-    @DisplayName("Should decrease BRL balance by debited amount when debitarReais is called")
-    void shouldDecreaseBrlBalanceWhenDebitarReaisIsCalled() {
+    @DisplayName("Should decrease BRL balance by debited amount when debitReais is called")
+    void shouldDecreaseBrlBalanceWhenDebitReaisIsCalled() {
         Wallet wallet = new Wallet(Money.ofReais(new BigDecimal("100.00")));
 
-        wallet.debitarReais(Money.ofReais(new BigDecimal("30.00")));
+        wallet.debitReais(Money.ofReais(new BigDecimal("30.00")));
 
         assertThat(wallet.getBalanceBrl()).isEqualTo(Money.ofReais(new BigDecimal("70.00")));
     }
 
     @Test
-    @DisplayName("Should increase USD balance by credited amount when creditarDolares is called")
-    void shouldIncreaseUsdBalanceWhenCreditarDolaresIsCalled() {
+    @DisplayName("Should increase USD balance by credited amount when creditDollars is called")
+    void shouldIncreaseUsdBalanceWhenCreditDollarsIsCalled() {
         Wallet wallet = new Wallet();
 
-        wallet.creditarDolares(Money.ofReais(new BigDecimal("50.00")));
+        wallet.creditDollars(Money.ofReais(new BigDecimal("50.00")));
 
         assertThat(wallet.getBalanceUsd()).isEqualTo(Money.ofReais(new BigDecimal("50.00")));
     }

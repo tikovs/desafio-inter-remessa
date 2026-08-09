@@ -2,14 +2,27 @@ package com.inter.remessa.domain.model;
 
 public class Wallet {
 
-    private Money balanceBrl;
-    private Money balanceUsd;
+    private Money reaisBalance;
+    private Money dollarsBalance;
 
     public Wallet() {
-        this.balanceBrl = Money.ofCents(0);
-        this.balanceUsd = Money.ofCents(0);
+        this.reaisBalance = Money.ofCents(0);
+        this.dollarsBalance = Money.ofCents(0);
     }
 
-    public Money getBalanceBrl() { return balanceBrl; }
-    public Money getBalanceUsd() { return balanceUsd; }
+    public Wallet(Money initialReaisBalance) {
+        this.reaisBalance = initialReaisBalance;
+        this.dollarsBalance = Money.ofCents(0);
+    }
+
+    public void debitReais(Money amount) {
+        this.reaisBalance = this.reaisBalance.subtract(amount);
+    }
+
+    public void creditDollars(Money amount) {
+        this.dollarsBalance = this.dollarsBalance.add(amount);
+    }
+
+    public Money getBalanceBrl() { return reaisBalance; }
+    public Money getBalanceUsd() { return dollarsBalance; }
 }
