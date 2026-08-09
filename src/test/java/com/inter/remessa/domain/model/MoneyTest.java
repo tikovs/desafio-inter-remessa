@@ -37,4 +37,12 @@ class MoneyTest {
         Money money = Money.ofReais(new BigDecimal("10.505"));
         assertThat(money.cents()).isEqualTo(1050L);
     }
+
+    @Test
+    @DisplayName("Should return true when money is less than another money")
+    void shouldReturnTrueWhenMoneyIsLessThanAnother() {
+        Money five = Money.ofReais(new BigDecimal("5.00"));
+        Money ten = Money.ofReais(new BigDecimal("10.00"));
+        assertThat(five.isLessThan(ten)).isTrue();
+    }
 }
