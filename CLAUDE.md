@@ -8,6 +8,8 @@ Contexto do projeto para qualquer sessão do Claude Code. Este arquivo reflete d
 
 API REST de remessa financeira entre usuários Pessoa Física (PF) e Pessoa Jurídica (PJ). Uma remessa = conversão de moeda (BRL → USD) + transferência do valor convertido, tudo em uma transação atômica.
 
+**Spring Boot 4.1 removeu os test slices clássicos** (`@DataJpaTest`, `@WebMvcTest` etc.) — confirmado via erro de compilação (`package org.springframework.boot.test.autoconfigure.orm.jpa does not exist`) e `mvn dependency:tree` vazio pra `data-jpa-test`. O jar `spring-boot-test-autoconfigure` só tem `@JsonTest` e `@AutoConfigureDataSourceInitialization` agora. **Usar `@SpringBootTest(webEnvironment = WebEnvironment.NONE)` + `@Autowired`/`@Transactional`** pra qualquer teste de integração daqui pra frente (persistência, controller) — vale também quando chegar no teste do RemessaController.
+
 ## Stack
 
 - **Java 21** (LTS)

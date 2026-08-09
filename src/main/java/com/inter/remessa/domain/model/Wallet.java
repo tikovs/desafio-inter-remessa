@@ -1,5 +1,6 @@
 package com.inter.remessa.domain.model;
 
+import com.inter.remessa.adapter.out.persistence.MoneyConverter;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,9 +14,11 @@ public class Wallet {
     @JoinColumn(name = "pessoa_id")
     private Pessoa pessoa;
 
+    @Convert(converter = MoneyConverter.class)
     @Column(name = "reais_balance_cents", nullable = false)
     private Money reaisBalance;
 
+    @Convert(converter = MoneyConverter.class)
     @Column(name = "dollars_balance_cents", nullable = false)
     private Money dollarsBalance;
 
