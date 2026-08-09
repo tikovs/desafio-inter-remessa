@@ -1,6 +1,7 @@
 package com.inter.remessa.domain.model;
 
 import com.inter.remessa.domain.exception.CpfInvalidoException;
+import com.inter.remessa.domain.exception.EmailInvalidoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,5 +27,20 @@ class PessoaFisicaTest {
     void shouldThrowCpfInvalidoExceptionWhenCpfIsInvalid() {
         assertThatThrownBy(() -> new PessoaFisica("João Silva", "joao@email.com", "$hash", "123.456.789-09"))
                 .isInstanceOf(CpfInvalidoException.class);
+    }
+
+    @Test
+    @DisplayName("Should throw EmailInvalidoException when email has invalid format")
+    void shouldThrowEmailInvalidoExceptionWhenEmailIsInvalid() {
+        assertThatThrownBy(() -> new PessoaFisica("João Silva", "email-invalido", "$hash", "12345678909"))
+                .isInstanceOf(EmailInvalidoException.class);
+    }
+
+    @Test
+    @DisplayName("Should store email in lowercase when created with uppercase characters")
+    void shouldStoreEmailInLowercaseWhenCreatedWithUppercaseCharacters() {
+        PessoaFisica pessoa = new PessoaFisica("João Silva", "Joao@Email.COM", "$hash", "12345678909");
+
+        assertThat(pessoa.getEmail()).isEqualTo("joao@email.com");
     }
 }
