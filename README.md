@@ -124,6 +124,82 @@ São **61 testes** no total, organizados em duas categorias:
 
 ---
 
+## Testando com Docker
+
+Após subir com `docker compose up --build`, a aplicação e o Redis estão prontos. Os IDs dos usuários de teste são impressos no log — use-os nos curls abaixo.
+
+### 1. Verificar que a aplicação subiu
+
+```bash
+curl -s http://localhost:8080/pessoas
+# → HTTP 405 (endpoint existe, método GET não permitido — app está no ar)
+```
+
+### 2. Criar uma remessa e confirmar conversão BRL→USD
+
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H 'Content-Type: application/json' \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":500}'
+# → {"id":1,"valorReais":500.0,"valorDolares":98.23,"cotacaoUtilizada":5.0902,"status":"CONCLUIDA"}
+```
+
+### 3. Confirmar que a cotação foi cacheada no Redis
+
+```bash
+# Entrar no container do Redis
+docker compose exec redis redis-cli
+
+# Dentro do redis-cli:
+KEYS cotacoes::*
+# → "cotacoes::2024-08-09"
+
+GET "cotacoes::2024-08-09"
+# → "5.0902"
+
+TTL "cotacoes::2024-08-09"
+# → 86394  (segundos restantes até expirar)
+```
+
+### 4. Confirmar que o cache evita segunda chamada ao BCB
+
+```bash
+# Segunda remessa no mesmo dia — cotação vem do Redis, não do BCB
+curl -s -X POST http://localhost:8080/remessas \
+  -H 'Content-Type: application/json' \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":100}'
+# → {"status":"CONCLUIDA"} (sem nova chamada ao BCB no log)
+```
+
+### 5. Testar erros de negócio
+
+```bash
+# Saldo insuficiente → 422
+curl -s -X POST http://localhost:8080/remessas \
+  -H 'Content-Type: application/json' \
+  -d '{"remetenteId":4,"destinatarioId":3,"valor":500}'
+# → HTTP 422 {"detail":"Saldo insuficiente para realizar a remessa"}
+
+# Limite diário PF R$10.000 excedido → 422
+curl -s -X POST http://localhost:8080/remessas \
+  -H 'Content-Type: application/json' \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":10000}'
+# primeira: 201 CONCLUIDA
+
+curl -s -X POST http://localhost:8080/remessas \
+  -H 'Content-Type: application/json' \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":1}'
+# segunda: 422 {"detail":"Limite diário de remessa excedido"}
+```
+
+### 6. Ver logs em tempo real
+
+```bash
+docker compose logs -f app
+```
+
+---
+
 ## Testado manualmente via curl
 
 Todos os requisitos foram testados com a aplicação rodando localmente. Exemplo de saída real:
