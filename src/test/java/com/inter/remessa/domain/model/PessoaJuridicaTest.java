@@ -1,6 +1,6 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.CnpjInvalidoException;
+import com.inter.remessa.domain.exception.InvalidCnpjException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,9 +16,9 @@ class PessoaJuridicaTest {
 
         assertThat(pessoa.getRazaoSocial()).isEqualTo("Empresa XPTO");
         assertThat(pessoa.getEmail()).isEqualTo("contato@xpto.com");
-        assertThat(pessoa.getSenhaHash()).isEqualTo("$2a$10$hashedpassword");
+        assertThat(pessoa.getPasswordHash()).isEqualTo("$2a$10$hashedpassword");
         assertThat(pessoa.getCnpj()).isEqualTo("12345678000190");
-        assertThat(pessoa.getTipo()).isEqualTo(TipoPessoa.JURIDICA);
+        assertThat(pessoa.getType()).isEqualTo(TipoPessoa.JURIDICA);
     }
 
     @Test
@@ -30,16 +30,16 @@ class PessoaJuridicaTest {
     }
 
     @Test
-    @DisplayName("Should throw CnpjInvalidoException when CNPJ has 13 characters")
-    void shouldThrowCnpjInvalidoExceptionWhenCnpjHas13Characters() {
+    @DisplayName("Should throw InvalidCnpjException when CNPJ has 13 characters")
+    void shouldThrowInvalidCnpjExceptionWhenCnpjHas13Characters() {
         assertThatThrownBy(() -> new PessoaJuridica("Empresa", "e@e.com", "$hash", "1234567800019"))
-                .isInstanceOf(CnpjInvalidoException.class);
+                .isInstanceOf(InvalidCnpjException.class);
     }
 
     @Test
-    @DisplayName("Should throw CnpjInvalidoException when CNPJ has 15 characters")
-    void shouldThrowCnpjInvalidoExceptionWhenCnpjHas15Characters() {
+    @DisplayName("Should throw InvalidCnpjException when CNPJ has 15 characters")
+    void shouldThrowInvalidCnpjExceptionWhenCnpjHas15Characters() {
         assertThatThrownBy(() -> new PessoaJuridica("Empresa", "e@e.com", "$hash", "123456780001901"))
-                .isInstanceOf(CnpjInvalidoException.class);
+                .isInstanceOf(InvalidCnpjException.class);
     }
 }

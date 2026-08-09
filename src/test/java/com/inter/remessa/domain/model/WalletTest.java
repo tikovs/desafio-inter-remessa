@@ -12,7 +12,7 @@ class WalletTest {
     void shouldStartWithZeroBalanceWhenNewWalletIsCreated() {
         Wallet wallet = new Wallet();
 
-        assertThat(wallet.getSaldoBrl()).isEqualTo(Money.ofCents(0));
-        assertThat(wallet.getSaldoUsd()).isEqualTo(Money.ofCents(0));
+        assertThat(wallet.getBalanceBrl()).isEqualTo(Money.ofCents(0));
+        assertThat(wallet.getBalanceUsd()).isEqualTo(Money.ofCents(0));
     }
 }

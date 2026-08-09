@@ -1,6 +1,6 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.EmailInvalidoException;
+import com.inter.remessa.domain.exception.InvalidEmailException;
 
 import java.util.regex.Pattern;
 
@@ -10,16 +10,16 @@ public abstract class Pessoa {
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private String email;
-    private String senhaHash;
+    private String passwordHash;
 
-    protected Pessoa(String email, String senhaHash) {
-        if (!EMAIL_PATTERN.matcher(email).matches()) throw new EmailInvalidoException(email);
+    protected Pessoa(String email, String passwordHash) {
+        if (!EMAIL_PATTERN.matcher(email).matches()) throw new InvalidEmailException(email);
         this.email = email.toLowerCase();
-        this.senhaHash = senhaHash;
+        this.passwordHash = passwordHash;
     }
 
-    public abstract TipoPessoa getTipo();
+    public abstract TipoPessoa getType();
 
     public String getEmail() { return email; }
-    public String getSenhaHash() { return senhaHash; }
+    public String getPasswordHash() { return passwordHash; }
 }

@@ -1,7 +1,7 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.CpfInvalidoException;
-import com.inter.remessa.domain.exception.EmailInvalidoException;
+import com.inter.remessa.domain.exception.InvalidCpfException;
+import com.inter.remessa.domain.exception.InvalidEmailException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,25 +15,25 @@ class PessoaFisicaTest {
     void shouldStoreFieldsAndReturnFisicaTypeWhenCreatedWithValidData() {
         PessoaFisica pessoa = new PessoaFisica("João Silva", "joao@email.com", "$2a$10$hashedpassword", "12345678909");
 
-        assertThat(pessoa.getNome()).isEqualTo("João Silva");
+        assertThat(pessoa.getName()).isEqualTo("João Silva");
         assertThat(pessoa.getEmail()).isEqualTo("joao@email.com");
-        assertThat(pessoa.getSenhaHash()).isEqualTo("$2a$10$hashedpassword");
+        assertThat(pessoa.getPasswordHash()).isEqualTo("$2a$10$hashedpassword");
         assertThat(pessoa.getCpf()).isEqualTo("12345678909");
-        assertThat(pessoa.getTipo()).isEqualTo(TipoPessoa.FISICA);
+        assertThat(pessoa.getType()).isEqualTo(TipoPessoa.FISICA);
     }
 
     @Test
-    @DisplayName("Should throw CpfInvalidoException when CPF does not match 11 digits")
-    void shouldThrowCpfInvalidoExceptionWhenCpfIsInvalid() {
+    @DisplayName("Should throw InvalidCpfException when CPF does not match 11 digits")
+    void shouldThrowInvalidCpfExceptionWhenCpfIsInvalid() {
         assertThatThrownBy(() -> new PessoaFisica("João Silva", "joao@email.com", "$hash", "123.456.789-09"))
-                .isInstanceOf(CpfInvalidoException.class);
+                .isInstanceOf(InvalidCpfException.class);
     }
 
     @Test
-    @DisplayName("Should throw EmailInvalidoException when email has invalid format")
-    void shouldThrowEmailInvalidoExceptionWhenEmailIsInvalid() {
+    @DisplayName("Should throw InvalidEmailException when email has invalid format")
+    void shouldThrowInvalidEmailExceptionWhenEmailIsInvalid() {
         assertThatThrownBy(() -> new PessoaFisica("João Silva", "email-invalido", "$hash", "12345678909"))
-                .isInstanceOf(EmailInvalidoException.class);
+                .isInstanceOf(InvalidEmailException.class);
     }
 
     @Test
