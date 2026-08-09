@@ -1,5 +1,6 @@
 package com.inter.remessa.domain.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +17,8 @@ public class Cotacao {
     private Long id;
 
     private LocalDate data;
+
+    @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal taxa;
 
     protected Cotacao() {}
