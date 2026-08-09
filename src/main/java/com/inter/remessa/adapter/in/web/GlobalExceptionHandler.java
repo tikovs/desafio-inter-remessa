@@ -6,6 +6,8 @@ import com.inter.remessa.domain.exception.EmailJaCadastradoException;
 import com.inter.remessa.domain.exception.InvalidCnpjException;
 import com.inter.remessa.domain.exception.InvalidCpfException;
 import com.inter.remessa.domain.exception.InvalidEmailException;
+import com.inter.remessa.domain.exception.LimiteExcedidoException;
+import com.inter.remessa.domain.exception.SaldoInsuficienteException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,5 +32,10 @@ class GlobalExceptionHandler {
     })
     ProblemDetail handleBadRequest(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler({SaldoInsuficienteException.class, LimiteExcedidoException.class})
+    ProblemDetail handleUnprocessable(RuntimeException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 }

@@ -37,7 +37,7 @@ public class RealizarRemessaService implements RealizarRemessaUseCase {
 
     @Override
     @Transactional
-    public void realizar(RealizarRemessaCommand command) {
+    public Remessa realizar(RealizarRemessaCommand command) {
         LocalDate hoje = LocalDate.now();
         Money valorReais = Money.ofReais(command.valorReais());
 
@@ -72,11 +72,12 @@ public class RealizarRemessaService implements RealizarRemessaUseCase {
         walletRepository.save(walletDestinatario);
 
         // 8. Registra a remessa para contar no limite diário futuro
-        remessaRepository.save(new Remessa(
+        return remessaRepository.save(new Remessa(
                 walletRemetente.getPessoa(),
                 walletDestinatario.getPessoa(),
                 valorReais,
-                valorDolares
+                valorDolares,
+                cotacao
         ));
     }
 }

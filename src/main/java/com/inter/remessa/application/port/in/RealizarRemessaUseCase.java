@@ -1,7 +1,8 @@
 package com.inter.remessa.application.port.in;
 
 import com.inter.remessa.application.usecase.RealizarRemessaCommand;
+import com.inter.remessa.domain.model.Remessa;
 
 public interface RealizarRemessaUseCase {
-    void realizar(RealizarRemessaCommand command);
+    Remessa realizar(RealizarRemessaCommand command);
 }

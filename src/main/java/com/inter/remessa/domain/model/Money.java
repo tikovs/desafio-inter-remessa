@@ -26,6 +26,10 @@ public record Money(long cents) {
         return this.cents < other.cents;
     }
 
+    public BigDecimal toBigDecimal() {
+        return BigDecimal.valueOf(this.cents, 2);
+    }
+
     public Money convert(BigDecimal exchangeRate) {
         BigDecimal reais = BigDecimal.valueOf(this.cents, 2);
         BigDecimal dollars = reais.divide(exchangeRate, 2, RoundingMode.HALF_EVEN);

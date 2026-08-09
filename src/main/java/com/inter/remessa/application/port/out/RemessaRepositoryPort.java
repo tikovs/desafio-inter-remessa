@@ -6,6 +6,6 @@ import com.inter.remessa.domain.model.Remessa;
 import java.time.LocalDate;
 
 public interface RemessaRepositoryPort {
-    void save(Remessa remessa);
+    Remessa save(Remessa remessa);
     Money totalRemessasHoje(Long pessoaId, LocalDate date);
 }

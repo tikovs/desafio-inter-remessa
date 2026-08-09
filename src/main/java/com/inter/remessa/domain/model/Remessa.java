@@ -3,6 +3,7 @@ package com.inter.remessa.domain.model;
 import com.inter.remessa.adapter.out.persistence.MoneyConverter;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,16 +29,20 @@ public class Remessa {
     @Column(name = "valor_dolares_cents", nullable = false)
     private Money valorDolares;
 
+    @Column(nullable = false, precision = 10, scale = 4)
+    private BigDecimal cotacao;
+
     @Column(nullable = false)
     private LocalDateTime dataHora;
 
     protected Remessa() {}
 
-    public Remessa(Pessoa remetente, Pessoa destinatario, Money valorReais, Money valorDolares) {
+    public Remessa(Pessoa remetente, Pessoa destinatario, Money valorReais, Money valorDolares, BigDecimal cotacao) {
         this.remetente = remetente;
         this.destinatario = destinatario;
         this.valorReais = valorReais;
         this.valorDolares = valorDolares;
+        this.cotacao = cotacao;
         this.dataHora = LocalDateTime.now();
     }
 
@@ -46,5 +51,6 @@ public class Remessa {
     public Pessoa getDestinatario() { return destinatario; }
     public Money getValorReais() { return valorReais; }
     public Money getValorDolares() { return valorDolares; }
+    public BigDecimal getCotacao() { return cotacao; }
     public LocalDateTime getDataHora() { return dataHora; }
 }

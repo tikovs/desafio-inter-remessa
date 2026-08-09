@@ -18,8 +18,8 @@ class RemessaJpaAdapter implements RemessaRepositoryPort {
     }
 
     @Override
-    public void save(Remessa remessa) {
-        repository.save(remessa);
+    public Remessa save(Remessa remessa) {
+        return repository.save(remessa);
     }
 
     @Override
