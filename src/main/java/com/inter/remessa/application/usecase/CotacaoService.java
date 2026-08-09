@@ -6,6 +6,7 @@ import com.inter.remessa.application.port.out.CotacaoRepositoryPort;
 import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
 import com.inter.remessa.domain.model.Cotacao;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -14,6 +15,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CotacaoService implements CotacaoProviderPort {
 
     private final CotacaoBcbAdapter bcbAdapter;

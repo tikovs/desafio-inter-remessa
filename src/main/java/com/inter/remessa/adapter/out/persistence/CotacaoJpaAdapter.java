@@ -22,6 +22,6 @@ class CotacaoJpaAdapter implements CotacaoRepositoryPort {
 
     @Override
     public Optional<Cotacao> findLatest() {
-        return repository.findLatest();
+        return repository.findFirstByOrderByDataDesc();
     }
 }
