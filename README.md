@@ -6,12 +6,36 @@ API REST de remessa financeira com conversão BRL → USD em tempo real via API 
 
 ## Requisitos
 
+**Sem Docker:**
 - Java 21
 - Maven (ou use o wrapper `./mvnw` incluído — não precisa instalar nada)
 
+**Com Docker:**
+- Docker + Docker Compose
+
 ---
 
-## Como compilar e executar
+## Como executar
+
+### Opção 1 — Docker Compose (recomendado)
+
+Sobe a aplicação e o Redis juntos com um único comando:
+
+```bash
+docker compose up --build
+```
+
+A aplicação sobe na porta `8080` e o Redis na `6379`. O cache de cotações usa Redis automaticamente.
+
+```bash
+# Parar tudo
+docker compose down
+
+# Rodar em segundo plano
+docker compose up --build -d
+```
+
+### Opção 2 — Local (sem Docker)
 
 ```bash
 # Compilar
@@ -21,9 +45,13 @@ API REST de remessa financeira com conversão BRL → USD em tempo real via API 
 ./mvnw spring-boot:run
 ```
 
-A aplicação sobe na porta `8080`. O banco H2 (em memória) é criado automaticamente.
+Sem Redis rodando, a aplicação usa cache em memória automaticamente (fallback).
 
-Ao subir, o `DevDataSeeder` cria 5 usuários de teste e imprime no log os comandos `curl` prontos para testar cada requisito:
+---
+
+## Dados de teste
+
+Ao subir, o `DevDataSeeder` cria 5 usuários e imprime no log os comandos `curl` prontos para testar cada requisito:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
@@ -49,7 +77,7 @@ Ao subir, o `DevDataSeeder` cria 5 usuários de teste e imprime no log os comand
 ./mvnw test
 ```
 
-São **57 testes** no total, organizados em duas categorias:
+São **61 testes** no total, organizados em duas categorias:
 
 ### Testes unitários (`*Test.java`)
 
@@ -73,6 +101,7 @@ São **57 testes** no total, organizados em duas categorias:
 | `RemessaRequirementIT` | **Todos os requisitos de remessa** (ver tabela abaixo) |
 | `PessoaRequirementIT` | Criação de PF/PJ, unicidade de e-mail, CPF e CNPJ |
 | `CotacaoWeekendIT` | Retorna cotação do banco sem chamar BCB no fim de semana; fallback para sexta |
+| `CotacaoCacheIT` | Cache Redis: BCB chamado 1x por data, hit na segunda chamada, isolamento por data |
 | `PessoaEmailUnicidadeIT` | Unicidade de e-mail a nível de constraint JPA no H2 |
 
 ---
@@ -151,8 +180,24 @@ A API do BCB não publica cotação nos finais de semana. O `CotacaoService` per
 
 O Spring Boot 4.1 removeu os test slices clássicos (`@DataJpaTest`, `@WebMvcTest`, `@MockBean`). Os testes de integração usam `@SpringBootTest(webEnvironment = MOCK)` + `@Transactional` + `@TestConfiguration @Primary` para substituir beans por mocks, sem precisar de slices ou bibliotecas extras.
 
+### Cache de cotações (Redis)
+
+A cotação de fechamento PTAX é publicada uma única vez por dia (~13h) pelo BCB e não muda após publicação. Por isso o cache é seguro: a chave é a própria data (`cotacoes::2024-08-09`), então cada dia tem sua entrada independente — não há risco de servir cotação do dia anterior.
+
+O TTL padrão é 24h (configurável via `cache.cotacoes.ttl-hours`) e serve apenas para limpeza de entradas antigas no Redis. Sem Redis, a aplicação usa cache em memória automaticamente.
+
+Para inspecionar o cache com `redis-cli`:
+
+```bash
+redis-cli KEYS "cotacoes::*"          # lista as datas cacheadas
+redis-cli GET "cotacoes::2024-08-09"  # valor da cotação
+redis-cli TTL "cotacoes::2024-08-09"  # tempo restante em segundos
+```
+
 ### Stack
 
 - Java 21 · Spring Boot 4.1 · Spring Data JPA · H2 (em memória) · Hibernate 7
+- Cache: Redis 7 via `spring-boot-starter-data-redis` · fallback em memória sem Redis
 - Testes: JUnit 5 · AssertJ · Mockito (via `spring-boot-starter-test`)
 - Segurança: `spring-security-crypto` para hash bcrypt de senhas (sem Spring Security completo)
+- Docker: multi-stage build (Maven + JRE Alpine) · Docker Compose com Redis
