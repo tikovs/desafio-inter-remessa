@@ -48,6 +48,10 @@ public class Wallet {
         this.reaisBalance = this.reaisBalance.subtract(amount);
     }
 
+    public void creditReais(Money amount) {
+        this.reaisBalance = this.reaisBalance.add(amount);
+    }
+
     public void creditDollars(Money amount) {
         this.dollarsBalance = this.dollarsBalance.add(amount);
     }

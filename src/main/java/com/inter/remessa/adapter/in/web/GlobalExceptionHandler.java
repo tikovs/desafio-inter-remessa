@@ -1,6 +1,7 @@
 package com.inter.remessa.adapter.in.web;
 
 import com.inter.remessa.domain.exception.CnpjJaCadastradoException;
+import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
 import com.inter.remessa.domain.exception.CpfJaCadastradoException;
 import com.inter.remessa.domain.exception.EmailJaCadastradoException;
 import com.inter.remessa.domain.exception.InvalidCnpjException;
@@ -37,5 +38,10 @@ class GlobalExceptionHandler {
     @ExceptionHandler({SaldoInsuficienteException.class, LimiteExcedidoException.class})
     ProblemDetail handleUnprocessable(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(CotacaoIndisponiveException.class)
+    ProblemDetail handleCotacaoIndisponivel(CotacaoIndisponiveException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 }

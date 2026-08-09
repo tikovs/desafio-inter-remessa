@@ -1,6 +1,7 @@
 package com.inter.remessa.application.usecase;
 
 import com.inter.remessa.application.port.out.PessoaRepositoryPort;
+import com.inter.remessa.application.port.out.WalletRepositoryPort;
 import com.inter.remessa.domain.exception.EmailJaCadastradoException;
 import com.inter.remessa.domain.model.PessoaFisica;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +17,14 @@ import static org.mockito.Mockito.*;
 class CriarPessoaServiceTest {
 
     private PessoaRepositoryPort repository;
+    private WalletRepositoryPort walletRepository;
     private CriarPessoaService service;
 
     @BeforeEach
     void setUp() {
         repository = mock(PessoaRepositoryPort.class);
-        service = new CriarPessoaService(repository, new BCryptPasswordEncoder());
+        walletRepository = mock(WalletRepositoryPort.class);
+        service = new CriarPessoaService(repository, walletRepository, new BCryptPasswordEncoder());
     }
 
     @Test
