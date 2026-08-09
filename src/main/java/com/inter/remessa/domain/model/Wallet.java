@@ -33,6 +33,12 @@ public class Wallet {
         this.dollarsBalance = Money.ofCents(0);
     }
 
+    public Wallet(Pessoa pessoa, Money initialReaisBalance) {
+        this.pessoa = pessoa;
+        this.reaisBalance = initialReaisBalance;
+        this.dollarsBalance = Money.ofCents(0);
+    }
+
     public Wallet(Money initialReaisBalance) {
         this.reaisBalance = initialReaisBalance;
         this.dollarsBalance = Money.ofCents(0);
