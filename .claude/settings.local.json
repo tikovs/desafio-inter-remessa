@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./mvnw test *)"
+      "Bash(./mvnw test *)",
+      "Bash(jar -tf ~/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/4.1.0/spring-boot-test-autoconfigure-4.1.0.jar)",
+      "Bash(./mvnw dependency:tree)",
+      "Bash(./mvnw dependency:list -q)",
+      "Bash(./mvnw dependency:list)",
+      "Bash(cat)",
+      "Bash(javac -cp ~/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/4.1.0/spring-boot-test-autoconfigure-4.1.0.jar /tmp/DataJpaTestProbe.java)"
     ]
   }
 }
