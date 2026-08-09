@@ -11,10 +11,13 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.inter.remessa.config.RedisConfig;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,11 +46,13 @@ class CotacaoWeekendIT {
     @Autowired CotacaoService cotacaoService;
     @Autowired CotacaoRepositoryPort cotacaoRepository;
     @Autowired CotacaoBcbAdapter bcbAdapter;
+    @Autowired CacheManager cacheManager;
     @Autowired EntityManager em;
 
     @BeforeEach
-    void resetMocks() {
+    void setUp() {
         Mockito.reset(bcbAdapter);
+        cacheManager.getCache(RedisConfig.CACHE_COTACOES).clear();
     }
 
     @Test
