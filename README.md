@@ -11,7 +11,9 @@ API REST de remessa financeira com conversão BRL → USD em tempo real via API 
 - Maven (ou use o wrapper `./mvnw` incluído — não precisa instalar nada)
 
 **Com Docker:**
-- Docker + Docker Compose
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (inclui Docker + Docker Compose)
+
+> Com Docker não é necessário ter Java ou Maven instalados — a compilação acontece dentro do container.
 
 ---
 
