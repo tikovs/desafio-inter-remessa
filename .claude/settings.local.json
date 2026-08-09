@@ -8,7 +8,13 @@
       "Bash(./mvnw dependency:list)",
       "Bash(cat)",
       "Bash(javac -cp ~/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/4.1.0/spring-boot-test-autoconfigure-4.1.0.jar /tmp/DataJpaTestProbe.java)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(./mvnw spring-boot:run)",
+      "Bash(kill %1)",
+      "Bash(./mvnw compile *)",
+      "Bash(curl -s http://localhost:8080/actuator/health)",
+      "Bash(curl -s -X POST http://localhost:8080/remessas -H 'Content-Type: application/json' -d '{\"remetenteId\": 1, \"destinatarioId\": 2, \"valor\": 500.00}')",
+      "Bash(python3 -m json.tool)"
     ]
   }
 }
