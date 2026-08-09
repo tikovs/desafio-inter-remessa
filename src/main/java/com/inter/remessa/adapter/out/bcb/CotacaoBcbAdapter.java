@@ -31,6 +31,6 @@ public class CotacaoBcbAdapter {
         if (items == null || items.isEmpty()) {
             throw new CotacaoIndisponiveException(formattedDate);
         }
-        return items.get(0).cotacaoCompra();
+        return items.getFirst().cotacaoCompra();
     }
 }
