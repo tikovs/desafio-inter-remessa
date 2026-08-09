@@ -7,7 +7,8 @@
       "Bash(./mvnw dependency:list -q)",
       "Bash(./mvnw dependency:list)",
       "Bash(cat)",
-      "Bash(javac -cp ~/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/4.1.0/spring-boot-test-autoconfigure-4.1.0.jar /tmp/DataJpaTestProbe.java)"
+      "Bash(javac -cp ~/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/4.1.0/spring-boot-test-autoconfigure-4.1.0.jar /tmp/DataJpaTestProbe.java)",
+      "Bash(git *)"
     ]
   }
 }
