@@ -21,18 +21,23 @@ public class CotacaoBcbAdapter implements CotacaoProviderPort {
         this.restClient = bcbRestClient;
     }
 
+    private static final int MAX_LOOKBACK_DAYS = 7;
+
     @Override
     public BigDecimal getCotacaoDolar(LocalDate date) {
-        String formattedDate = date.format(BCB_DATE_FORMAT);
-        String path = "/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='" + formattedDate + "'&$format=json";
-        CotacaoBcbResponse response = restClient.get()
-                .uri(path)
-                .retrieve()
-                .body(CotacaoBcbResponse.class);
-        List<CotacaoBcbResponse.CotacaoItem> items = (response != null) ? response.value() : List.of();
-        if (items == null || items.isEmpty()) {
-            throw new CotacaoIndisponiveException(formattedDate);
+        for (int i = 0; i < MAX_LOOKBACK_DAYS; i++) {
+            LocalDate candidate = date.minusDays(i);
+            String formattedDate = candidate.format(BCB_DATE_FORMAT);
+            String path = "/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='" + formattedDate + "'&$format=json";
+            CotacaoBcbResponse response = restClient.get()
+                    .uri(path)
+                    .retrieve()
+                    .body(CotacaoBcbResponse.class);
+            List<CotacaoBcbResponse.CotacaoItem> items = (response != null) ? response.value() : List.of();
+            if (items != null && !items.isEmpty()) {
+                return items.get(0).cotacaoCompra();
+            }
         }
-        return items.get(0).cotacaoCompra();
+        throw new CotacaoIndisponiveException(date.format(BCB_DATE_FORMAT));
     }
 }
