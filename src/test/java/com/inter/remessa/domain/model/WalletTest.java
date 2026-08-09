@@ -27,4 +27,14 @@ class WalletTest {
 
         assertThat(wallet.getBalanceBrl()).isEqualTo(Money.ofReais(new BigDecimal("70.00")));
     }
+
+    @Test
+    @DisplayName("Should increase USD balance by credited amount when creditarDolares is called")
+    void shouldIncreaseUsdBalanceWhenCreditarDolaresIsCalled() {
+        Wallet wallet = new Wallet();
+
+        wallet.creditarDolares(Money.ofReais(new BigDecimal("50.00")));
+
+        assertThat(wallet.getBalanceUsd()).isEqualTo(Money.ofReais(new BigDecimal("50.00")));
+    }
 }
