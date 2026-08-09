@@ -13,7 +13,6 @@ public abstract class Pessoa {
 
     public abstract TipoPessoa getTipo();
 
-
     public String getEmail() { return email; }
     public String getSenhaHash() { return senhaHash; }
 }
