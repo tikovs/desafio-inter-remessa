@@ -53,4 +53,12 @@ class MoneyTest {
         Money five = Money.ofReais(new BigDecimal("5.00"));
         assertThat(ten.isLessThan(five)).isFalse();
     }
+
+    @Test
+    @DisplayName("Should convert R$ 543.00 to US$ 100.00 when exchange rate is 5.43")
+    void shouldConvertReaisToDollarsWhenExchangeRateIsValid() {
+        Money reais = Money.ofReais(new BigDecimal("543.00"));
+        Money dollars = reais.convert(new BigDecimal("5.43"));
+        assertThat(dollars).isEqualTo(Money.ofReais(new BigDecimal("100.00")));
+    }
 }
