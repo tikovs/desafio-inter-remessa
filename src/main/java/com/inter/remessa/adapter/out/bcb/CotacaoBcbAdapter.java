@@ -1,6 +1,5 @@
 package com.inter.remessa.adapter.out.bcb;
 
-import com.inter.remessa.application.port.out.CotacaoProviderPort;
 import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -11,9 +10,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
-public class CotacaoBcbAdapter implements CotacaoProviderPort {
+public class CotacaoBcbAdapter {
 
     private static final DateTimeFormatter BCB_DATE_FORMAT = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+    private static final int MAX_LOOKBACK_DAYS = 7;
 
     private final RestClient restClient;
 
@@ -21,9 +21,6 @@ public class CotacaoBcbAdapter implements CotacaoProviderPort {
         this.restClient = bcbRestClient;
     }
 
-    private static final int MAX_LOOKBACK_DAYS = 7;
-
-    @Override
     public BigDecimal getCotacaoDolar(LocalDate date) {
         for (int i = 0; i < MAX_LOOKBACK_DAYS; i++) {
             LocalDate candidate = date.minusDays(i);
