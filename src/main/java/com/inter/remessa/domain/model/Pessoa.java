@@ -1,6 +1,6 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.InvalidEmailException;
+import com.inter.remessa.domain.exception.pessoa.InvalidEmailException;
 import jakarta.persistence.*;
 
 import java.util.regex.Pattern;

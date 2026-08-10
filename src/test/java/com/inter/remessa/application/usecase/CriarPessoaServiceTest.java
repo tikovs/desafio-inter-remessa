@@ -2,7 +2,9 @@ package com.inter.remessa.application.usecase;
 
 import com.inter.remessa.application.port.out.PessoaRepositoryPort;
 import com.inter.remessa.application.port.out.WalletRepositoryPort;
-import com.inter.remessa.domain.exception.EmailJaCadastradoException;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaFisicaCommand;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaService;
+import com.inter.remessa.domain.exception.pessoa.EmailAlreadyRegisteredException;
 import com.inter.remessa.domain.model.PessoaFisica;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,13 +45,13 @@ class CriarPessoaServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw EmailJaCadastradoException when email already exists")
-    void shouldThrowEmailJaCadastradoExceptionWhenEmailAlreadyExists() {
+    @DisplayName("Should throw EmailAlreadyRegisteredException when email already exists")
+    void shouldThrowEmailAlreadyRegisteredExceptionWhenEmailAlreadyExists() {
         when(repository.existsByEmail("joao@email.com")).thenReturn(true);
 
         assertThatThrownBy(() ->
                 service.criar(new CriarPessoaFisicaCommand("João", "joao@email.com", "senha123", "12345678909"))
-        ).isInstanceOf(EmailJaCadastradoException.class);
+        ).isInstanceOf(EmailAlreadyRegisteredException.class);
 
         verify(repository, never()).save(any());
     }

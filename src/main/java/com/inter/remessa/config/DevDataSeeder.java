@@ -1,9 +1,9 @@
 package com.inter.remessa.config;
 
 import com.inter.remessa.application.port.out.WalletRepositoryPort;
-import com.inter.remessa.application.usecase.CriarPessoaFisicaCommand;
-import com.inter.remessa.application.usecase.CriarPessoaJuridicaCommand;
-import com.inter.remessa.application.usecase.CriarPessoaService;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaFisicaCommand;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaJuridicaCommand;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaService;
 import com.inter.remessa.domain.model.Money;
 import com.inter.remessa.domain.model.Pessoa;
 import com.inter.remessa.domain.model.Wallet;

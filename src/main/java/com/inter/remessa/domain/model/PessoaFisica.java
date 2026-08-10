@@ -1,6 +1,6 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.InvalidCpfException;
+import com.inter.remessa.domain.exception.pessoa.InvalidCpfException;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

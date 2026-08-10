@@ -1,6 +1,6 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.InvalidCnpjException;
+import com.inter.remessa.domain.exception.pessoa.InvalidCnpjException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

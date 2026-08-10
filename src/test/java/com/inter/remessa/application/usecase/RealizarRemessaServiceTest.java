@@ -3,8 +3,10 @@ package com.inter.remessa.application.usecase;
 import com.inter.remessa.application.port.out.CotacaoProviderPort;
 import com.inter.remessa.application.port.out.RemessaRepositoryPort;
 import com.inter.remessa.application.port.out.WalletRepositoryPort;
-import com.inter.remessa.application.validator.LimiteDiarioValidator;
-import com.inter.remessa.application.validator.SaldoSuficienteValidator;
+import com.inter.remessa.application.usecase.remessa.RealizarRemessaCommand;
+import com.inter.remessa.application.usecase.remessa.RealizarRemessaService;
+import com.inter.remessa.application.validator.LimiteDailyValidator;
+import com.inter.remessa.application.validator.SaldoSufficientValidator;
 import com.inter.remessa.domain.model.Money;
 import com.inter.remessa.domain.model.PessoaFisica;
 import com.inter.remessa.domain.model.Remessa;
@@ -38,7 +40,7 @@ class RealizarRemessaServiceTest {
                 walletRepository,
                 remessaRepository,
                 cotacaoProvider,
-                List.of(new SaldoSuficienteValidator(), new LimiteDiarioValidator())
+                List.of(new SaldoSufficientValidator(), new LimiteDailyValidator())
         );
     }
 

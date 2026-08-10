@@ -1,7 +1,7 @@
 package com.inter.remessa.adapter.in.web.remessa;
 
 import com.inter.remessa.application.port.in.RealizarRemessaUseCase;
-import com.inter.remessa.application.usecase.RealizarRemessaCommand;
+import com.inter.remessa.application.usecase.remessa.RealizarRemessaCommand;
 import com.inter.remessa.domain.model.Remessa;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

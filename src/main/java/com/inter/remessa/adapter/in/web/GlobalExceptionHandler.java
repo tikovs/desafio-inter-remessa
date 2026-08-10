@@ -1,14 +1,14 @@
 package com.inter.remessa.adapter.in.web;
 
-import com.inter.remessa.domain.exception.CnpjJaCadastradoException;
-import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
-import com.inter.remessa.domain.exception.CpfJaCadastradoException;
-import com.inter.remessa.domain.exception.EmailJaCadastradoException;
-import com.inter.remessa.domain.exception.InvalidCnpjException;
-import com.inter.remessa.domain.exception.InvalidCpfException;
-import com.inter.remessa.domain.exception.InvalidEmailException;
-import com.inter.remessa.domain.exception.LimiteExcedidoException;
-import com.inter.remessa.domain.exception.SaldoInsuficienteException;
+import com.inter.remessa.domain.exception.cotacao.CotacaoUnavailableException;
+import com.inter.remessa.domain.exception.pessoa.CnpjAlreadyRegisteredException;
+import com.inter.remessa.domain.exception.pessoa.CpfAlreadyRegisteredException;
+import com.inter.remessa.domain.exception.pessoa.EmailAlreadyRegisteredException;
+import com.inter.remessa.domain.exception.pessoa.InvalidCnpjException;
+import com.inter.remessa.domain.exception.pessoa.InvalidCpfException;
+import com.inter.remessa.domain.exception.pessoa.InvalidEmailException;
+import com.inter.remessa.domain.exception.remessa.LimiteExceededException;
+import com.inter.remessa.domain.exception.remessa.SaldoInsufficientException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 class GlobalExceptionHandler {
 
     @ExceptionHandler({
-            EmailJaCadastradoException.class,
-            CpfJaCadastradoException.class,
-            CnpjJaCadastradoException.class
+            EmailAlreadyRegisteredException.class,
+            CpfAlreadyRegisteredException.class,
+            CnpjAlreadyRegisteredException.class
     })
     ProblemDetail handleConflict(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
@@ -35,13 +35,13 @@ class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler({SaldoInsuficienteException.class, LimiteExcedidoException.class})
+    @ExceptionHandler({SaldoInsufficientException.class, LimiteExceededException.class})
     ProblemDetail handleUnprocessable(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
-    @ExceptionHandler(CotacaoIndisponiveException.class)
-    ProblemDetail handleCotacaoIndisponivel(CotacaoIndisponiveException ex) {
+    @ExceptionHandler(CotacaoUnavailableException.class)
+    ProblemDetail handleCotacaoIndisponivel(CotacaoUnavailableException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 }

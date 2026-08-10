@@ -1,8 +1,8 @@
 package com.inter.remessa.adapter.in.web.pessoa;
 
-import com.inter.remessa.application.usecase.CriarPessoaFisicaCommand;
-import com.inter.remessa.application.usecase.CriarPessoaJuridicaCommand;
-import com.inter.remessa.application.usecase.CriarPessoaService;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaFisicaCommand;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaJuridicaCommand;
+import com.inter.remessa.application.usecase.pessoa.CriarPessoaService;
 import com.inter.remessa.domain.model.PessoaFisica;
 import com.inter.remessa.domain.model.PessoaJuridica;
 import io.swagger.v3.oas.annotations.Operation;

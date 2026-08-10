@@ -2,7 +2,8 @@ package com.inter.remessa.application.usecase;
 
 import com.inter.remessa.adapter.out.bcb.CotacaoBcbAdapter;
 import com.inter.remessa.application.port.out.CotacaoRepositoryPort;
-import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
+import com.inter.remessa.application.usecase.cotacao.CotacaoService;
+import com.inter.remessa.domain.exception.cotacao.CotacaoUnavailableException;
 import com.inter.remessa.domain.model.Cotacao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -90,12 +91,12 @@ class CotacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw CotacaoIndisponiveException when all fallback days return no data")
+    @DisplayName("Should throw CotacaoUnavailableException when all fallback days return no data")
     void shouldThrowExceptionWhenAllFallbackDaysEmpty() {
         LocalDate date = LocalDate.of(2024, 3, 18);
         when(bcbAdapter.getCotacaoDolar(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getCotacaoDolar(date))
-                .isInstanceOf(CotacaoIndisponiveException.class);
+                .isInstanceOf(CotacaoUnavailableException.class);
     }
 }

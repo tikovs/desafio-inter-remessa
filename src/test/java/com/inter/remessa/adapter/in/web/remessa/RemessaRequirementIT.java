@@ -1,6 +1,7 @@
 package com.inter.remessa.adapter.in.web.remessa;
 
 import com.inter.remessa.application.port.out.CotacaoProviderPort;
+import com.inter.remessa.domain.exception.cotacao.CotacaoUnavailableException;
 import com.inter.remessa.domain.model.Money;
 import com.inter.remessa.domain.model.Pessoa;
 import com.inter.remessa.domain.model.PessoaFisica;
@@ -209,7 +210,7 @@ class RemessaRequirementIT {
         PessoaFisica destinatario = pf("rollback-dest@test.com", "47211111111", BigDecimal.ZERO);
 
         when(cotacaoProvider.getCotacaoDolar(any(LocalDate.class)))
-                .thenThrow(new com.inter.remessa.domain.exception.CotacaoIndisponiveException("test"));
+                .thenThrow(new CotacaoUnavailableException("test"));
 
         mockMvc.perform(post("/remessas")
                         .contentType(MediaType.APPLICATION_JSON)

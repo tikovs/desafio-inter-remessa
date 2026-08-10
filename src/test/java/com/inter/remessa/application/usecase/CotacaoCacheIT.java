@@ -1,6 +1,7 @@
 package com.inter.remessa.application.usecase;
 
 import com.inter.remessa.adapter.out.bcb.CotacaoBcbAdapter;
+import com.inter.remessa.application.usecase.cotacao.CotacaoService;
 import com.inter.remessa.config.RedisConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

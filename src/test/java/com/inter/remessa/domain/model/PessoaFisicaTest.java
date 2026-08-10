@@ -1,7 +1,7 @@
 package com.inter.remessa.domain.model;
 
-import com.inter.remessa.domain.exception.InvalidCpfException;
-import com.inter.remessa.domain.exception.InvalidEmailException;
+import com.inter.remessa.domain.exception.pessoa.InvalidCpfException;
+import com.inter.remessa.domain.exception.pessoa.InvalidEmailException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
