@@ -1,4 +1,4 @@
-package com.inter.remessa.adapter.in.web;
+package com.inter.remessa.adapter.in.web.pessoa;
 
 import com.inter.remessa.domain.model.TipoPessoa;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +40,7 @@ class PessoaRequirementIT {
                 """;
 
         ResponseEntity<PessoaResponse> response = client.post()
-                .uri("/pessoas")
+                .uri("/pessoas/fisica")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
@@ -62,7 +62,7 @@ class PessoaRequirementIT {
                 """;
 
         ResponseEntity<PessoaResponse> response = client.post()
-                .uri("/pessoas")
+                .uri("/pessoas/juridica")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
@@ -83,10 +83,10 @@ class PessoaRequirementIT {
                 {"nome":"Bruno Lima","email":"dup-email-req@test.com","senha":"s","cpf":"20211111111"}
                 """;
 
-        client.post().uri("/pessoas").contentType(MediaType.APPLICATION_JSON).body(first).retrieve().toBodilessEntity();
+        client.post().uri("/pessoas/fisica").contentType(MediaType.APPLICATION_JSON).body(first).retrieve().toBodilessEntity();
 
         ResponseEntity<Void> response = client.post()
-                .uri("/pessoas")
+                .uri("/pessoas/fisica")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(second)
                 .retrieve()
@@ -105,10 +105,10 @@ class PessoaRequirementIT {
                 {"nome":"Carlos B","email":"dup-cpf-b@test.com","senha":"s","cpf":"30111111111"}
                 """;
 
-        client.post().uri("/pessoas").contentType(MediaType.APPLICATION_JSON).body(first).retrieve().toBodilessEntity();
+        client.post().uri("/pessoas/fisica").contentType(MediaType.APPLICATION_JSON).body(first).retrieve().toBodilessEntity();
 
         ResponseEntity<Void> response = client.post()
-                .uri("/pessoas")
+                .uri("/pessoas/fisica")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(second)
                 .retrieve()
@@ -127,10 +127,10 @@ class PessoaRequirementIT {
                 {"nome":"Empresa B","email":"dup-cnpj-b@test.com","senha":"s","cnpj":"11222333000181"}
                 """;
 
-        client.post().uri("/pessoas").contentType(MediaType.APPLICATION_JSON).body(first).retrieve().toBodilessEntity();
+        client.post().uri("/pessoas/juridica").contentType(MediaType.APPLICATION_JSON).body(first).retrieve().toBodilessEntity();
 
         ResponseEntity<Void> response = client.post()
-                .uri("/pessoas")
+                .uri("/pessoas/juridica")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(second)
                 .retrieve()

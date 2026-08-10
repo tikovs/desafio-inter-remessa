@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Arquivos temporários de teste manual ###
+r.json
+response.json

@@ -1,4 +1,4 @@
-package com.inter.remessa.adapter.in.web;
+package com.inter.remessa.adapter.in.web.remessa;
 
 import com.inter.remessa.application.port.out.CotacaoProviderPort;
 import com.inter.remessa.domain.model.Money;
@@ -36,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class RemessaControllerTest {
 
-    // @TestConfiguration como static inner class é automaticamente carregada pelo @SpringBootTest
     @TestConfiguration
     static class StubCotacao {
         @Bean
@@ -52,7 +51,6 @@ class RemessaControllerTest {
     @Autowired
     private EntityManager em;
 
-    // Injeta o mock declarado em StubCotacao para configurar stubbings por teste
     @Autowired
     private CotacaoProviderPort cotacaoProvider;
 
@@ -68,7 +66,6 @@ class RemessaControllerTest {
     @Test
     @DisplayName("Should return 201 and transfer R$500 to US$100 when exchange rate is 5.00")
     void shouldReturn201AndTransferFundsWhenRemessaIsValid() throws Exception {
-        // Cria pessoas e carteiras diretamente no repositório, sem passar pelo endpoint
         PessoaFisica remetente = new PessoaFisica("João Silva", "joao@remessa.com", "$hash", "12345678901");
         PessoaFisica destinatario = new PessoaFisica("Maria Souza", "maria@remessa.com", "$hash", "98765432100");
         em.persist(remetente);
@@ -93,7 +90,6 @@ class RemessaControllerTest {
                 .andExpect(jsonPath("$.valorDolares").value(100.00))
                 .andExpect(jsonPath("$.cotacaoUtilizada").value(5.00));
 
-        // Confirma saldos finais lendo direto do banco, dentro da mesma transação
         em.flush();
         em.clear();
         Wallet updatedRemetente = em.find(Wallet.class, walletRemetente.getId());

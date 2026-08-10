@@ -1,4 +1,4 @@
-package com.inter.remessa.adapter.in.web;
+package com.inter.remessa.adapter.in.web.pessoa;
 
 import com.inter.remessa.domain.model.TipoPessoa;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,11 +33,11 @@ class PessoaControllerTest {
     @Test
     @DisplayName("Should return 201 Created with PessoaResponse when creating a valid PessoaFisica")
     void shouldReturn201WhenCreatingValidPessoaFisica() {
-        PessoaRequest request = new PessoaRequest(
-                "João Silva", "joao@test.com", "senha123", "12345678901", null);
+        PessoaFisicaRequest request = new PessoaFisicaRequest(
+                "João Silva", "joao-ctrl@test.com", "senha123", "12345678901");
 
         ResponseEntity<PessoaResponse> response = client.post()
-                .uri("/pessoas")
+                .uri("/pessoas/fisica")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
@@ -47,7 +47,28 @@ class PessoaControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().id()).isNotNull();
         assertThat(response.getBody().nome()).isEqualTo("João Silva");
-        assertThat(response.getBody().email()).isEqualTo("joao@test.com");
+        assertThat(response.getBody().email()).isEqualTo("joao-ctrl@test.com");
         assertThat(response.getBody().tipoPessoa()).isEqualTo(TipoPessoa.FISICA);
+    }
+
+    @Test
+    @DisplayName("Should return 201 Created with PessoaResponse when creating a valid PessoaJuridica")
+    void shouldReturn201WhenCreatingValidPessoaJuridica() {
+        PessoaJuridicaRequest request = new PessoaJuridicaRequest(
+                "Empresa LTDA", "empresa-ctrl@test.com", "senha123", "12345678000195");
+
+        ResponseEntity<PessoaResponse> response = client.post()
+                .uri("/pessoas/juridica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .toEntity(PessoaResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().id()).isNotNull();
+        assertThat(response.getBody().nome()).isEqualTo("Empresa LTDA");
+        assertThat(response.getBody().email()).isEqualTo("empresa-ctrl@test.com");
+        assertThat(response.getBody().tipoPessoa()).isEqualTo(TipoPessoa.JURIDICA);
     }
 }

@@ -1,4 +1,4 @@
-package com.inter.remessa.adapter.in.web;
+package com.inter.remessa.adapter.in.web.remessa;
 
 import com.inter.remessa.application.port.in.RealizarRemessaUseCase;
 import com.inter.remessa.application.usecase.RealizarRemessaCommand;

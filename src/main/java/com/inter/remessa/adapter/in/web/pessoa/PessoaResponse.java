@@ -1,4 +1,4 @@
-package com.inter.remessa.adapter.in.web;
+package com.inter.remessa.adapter.in.web.pessoa;
 
 import com.inter.remessa.domain.model.TipoPessoa;
 

@@ -1,4 +1,4 @@
-package com.inter.remessa.adapter.in.web;
+package com.inter.remessa.adapter.in.web.remessa;
 
 import com.inter.remessa.application.port.out.CotacaoProviderPort;
 import com.inter.remessa.domain.model.Money;
@@ -146,7 +146,6 @@ class RemessaRequirementIT {
         PessoaFisica remetente = pf("pf-limit-rem@test.com", "43111111111", new BigDecimal("15000.00"));
         PessoaFisica destinatario = pf("pf-limit-dest@test.com", "43211111111", BigDecimal.ZERO);
 
-        // primeira remessa de R$10.000 — deve passar
         mockMvc.perform(post("/remessas")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(remetente.getId(), destinatario.getId(), "10000.00")))
@@ -154,7 +153,6 @@ class RemessaRequirementIT {
 
         em.flush();
 
-        // segunda remessa de R$1 — deve falhar por limite diário
         mockMvc.perform(post("/remessas")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(remetente.getId(), destinatario.getId(), "1.00")))
@@ -167,7 +165,6 @@ class RemessaRequirementIT {
         PessoaJuridica remetente = pj("pj-limit-rem@test.com", "44111111000181", new BigDecimal("55000.00"));
         PessoaFisica destinatario = pf("pj-limit-dest@test.com", "44211111111", BigDecimal.ZERO);
 
-        // primeira remessa de R$50.000 — deve passar
         mockMvc.perform(post("/remessas")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(remetente.getId(), destinatario.getId(), "50000.00")))
@@ -175,7 +172,6 @@ class RemessaRequirementIT {
 
         em.flush();
 
-        // segunda remessa de R$1 — deve falhar por limite diário
         mockMvc.perform(post("/remessas")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(remetente.getId(), destinatario.getId(), "1.00")))

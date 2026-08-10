@@ -79,7 +79,7 @@ Ao subir, o `DevDataSeeder` cria 5 usuários e imprime no log os `curl`s prontos
 ./mvnw test
 ```
 
-**61 testes** no total:
+**62 testes** no total:
 
 | Classe | Tipo | O que cobre |
 |--------|------|-------------|
