@@ -10,6 +10,7 @@ import com.inter.remessa.domain.model.PessoaJuridica;
 import com.inter.remessa.domain.model.Wallet;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CriarPessoaService {
@@ -24,6 +25,7 @@ public class CriarPessoaService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public PessoaFisica criar(CriarPessoaFisicaCommand command) {
         if (repository.existsByEmail(command.email())) throw new EmailAlreadyRegisteredException(command.email());
         if (repository.existsByCpf(command.cpf())) throw new CpfAlreadyRegisteredException(command.cpf());
@@ -34,6 +36,7 @@ public class CriarPessoaService {
         return saved;
     }
 
+    @Transactional
     public PessoaJuridica criar(CriarPessoaJuridicaCommand command) {
         if (repository.existsByEmail(command.email())) throw new EmailAlreadyRegisteredException(command.email());
         if (repository.existsByCnpj(command.cnpj())) throw new CnpjAlreadyRegisteredException(command.cnpj());
