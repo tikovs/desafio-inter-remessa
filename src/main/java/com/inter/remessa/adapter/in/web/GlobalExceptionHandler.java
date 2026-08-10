@@ -9,6 +9,9 @@ import com.inter.remessa.domain.exception.pessoa.InvalidCpfException;
 import com.inter.remessa.domain.exception.pessoa.InvalidEmailException;
 import com.inter.remessa.domain.exception.remessa.LimiteExceededException;
 import com.inter.remessa.domain.exception.remessa.SaldoInsufficientException;
+import com.inter.remessa.domain.exception.remessa.WalletNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler({
             EmailAlreadyRegisteredException.class,
@@ -41,7 +46,18 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CotacaoUnavailableException.class)
-    ProblemDetail handleCotacaoIndisponivel(CotacaoUnavailableException ex) {
+    ProblemDetail handleCotacaoUnavailable(CotacaoUnavailableException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    }
+
+    @ExceptionHandler(WalletNotFoundException.class)
+    ProblemDetail handleWalletNotFound(WalletNotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    ProblemDetail handleUnexpected(Exception ex) {
+        log.error("Unexpected error", ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
 }

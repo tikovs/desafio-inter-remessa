@@ -1,6 +1,7 @@
 package com.inter.remessa.adapter.out.persistence.wallet;
 
 import com.inter.remessa.application.port.out.WalletRepositoryPort;
+import com.inter.remessa.domain.exception.remessa.WalletNotFoundException;
 import com.inter.remessa.domain.model.Wallet;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +17,7 @@ class WalletJpaAdapter implements WalletRepositoryPort {
     @Override
     public Wallet findByPessoaId(Long pessoaId) {
         return repository.findByPessoaId(pessoaId)
-                .orElseThrow(() -> new IllegalArgumentException("Wallet não encontrada para pessoaId=" + pessoaId));
+                .orElseThrow(() -> new WalletNotFoundException(pessoaId));
     }
 
     @Override
