@@ -30,11 +30,17 @@ docker compose up --build -d   # em segundo plano
 docker compose down            # parar tudo
 ```
 
-### Opção 2 — Local
+### Opção 2 — Local (sem Docker)
 
 ```bash
+# Compilar
+./mvnw clean package -DskipTests
+
+# Executar
 ./mvnw spring-boot:run
 ```
+
+Sem Redis rodando, a aplicação usa cache em memória automaticamente (fallback).
 
 ---
 
