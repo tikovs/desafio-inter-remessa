@@ -87,8 +87,8 @@ Ao subir, o `DevDataSeeder` cria 5 usuários e imprime no log os `curl`s prontos
 | `WalletTest` | Unitário | Débito e crédito em BRL e USD |
 | `PessoaFisicaTest` | Unitário | Validação de CPF e e-mail no construtor |
 | `PessoaJuridicaTest` | Unitário | Validação de CNPJ alfanumérico (IN RFB 2.229/2024) |
-| `SaldoSuficienteValidatorTest` | Unitário | Rejeita remessa quando saldo insuficiente |
-| `LimiteDiarioValidatorTest` | Unitário | Limite PF R$10k/dia · PJ R$50k/dia |
+| `SaldoSufficientValidatorTest` | Unitário | Rejeita remessa quando saldo insuficiente |
+| `LimiteDailyValidatorTest` | Unitário | Limite PF R$10k/dia · PJ R$50k/dia |
 | `RealizarRemessaServiceTest` | Unitário | Orquestração: carteira → validação → cotação → débito/crédito |
 | `CriarPessoaServiceTest` | Unitário | Criação de PF/PJ com hash bcrypt e carteira automática |
 | `CotacaoServiceTest` | Unitário | Fallback genérico de cotação (walk-back por dia) |
@@ -98,6 +98,48 @@ Ao subir, o `DevDataSeeder` cria 5 usuários e imprime no log os `curl`s prontos
 | `CotacaoWeekendIT` | Integração | Walk-back para sexta em fim de semana e dia útil sem PTAX |
 | `CotacaoCacheIT` | Integração | Cache: BCB chamado 1× por data, hit na segunda chamada |
 | `PessoaEmailUnicidadeIT` | Integração | Constraint JPA de unicidade de e-mail no H2 |
+
+---
+
+## Estrutura de pastas
+
+```
+src/main/java/com/inter/remessa/
+ ├── config/                         → OpenApiConfig, RedisConfig, BcbClientConfig, SecurityConfig, DevDataSeeder
+ ├── domain/
+ │    ├── model/                     → Pessoa, PessoaFisica, PessoaJuridica, Wallet, Remessa, Money, Cotacao, TipoPessoa
+ │    └── exception/
+ │         ├── cotacao/              → CotacaoUnavailableException
+ │         ├── pessoa/               → EmailAlreadyRegisteredException, CpfAlreadyRegisteredException,
+ │         │                            CnpjAlreadyRegisteredException, InvalidCpfException,
+ │         │                            InvalidCnpjException, InvalidEmailException
+ │         └── remessa/              → SaldoInsufficientException, LimiteExceededException, WalletNotFoundException
+ ├── application/
+ │    ├── port/
+ │    │    ├── in/                   → RealizarRemessaUseCase
+ │    │    └── out/                  → WalletRepositoryPort, CotacaoProviderPort, PessoaRepositoryPort,
+ │    │                                 RemessaRepositoryPort, CotacaoRepositoryPort
+ │    ├── usecase/
+ │    │    ├── cotacao/              → CotacaoService
+ │    │    ├── pessoa/               → CriarPessoaService, CriarPessoaFisicaCommand, CriarPessoaJuridicaCommand
+ │    │    └── remessa/              → RealizarRemessaService, RealizarRemessaCommand
+ │    └── validator/                 → RemessaValidator, RemessaValidationContext,
+ │                                      SaldoSufficientValidator, LimiteDailyValidator
+ └── adapter/
+      ├── in/web/
+      │    ├── pessoa/               → PessoaController, PessoaFisicaRequest, PessoaJuridicaRequest, PessoaResponse
+      │    ├── remessa/              → RemessaController, RemessaRequest, RemessaResponse
+      │    └── GlobalExceptionHandler
+      └── out/
+           ├── persistence/
+           │    ├── cotacao/         → CotacaoJpaAdapter, CotacaoJpaRepository
+           │    ├── pessoa/          → PessoaJpaAdapter, PessoaJpaRepository,
+           │    │                       PessoaFisicaJpaRepository, PessoaJuridicaJpaRepository
+           │    ├── remessa/         → RemessaJpaAdapter, RemessaJpaRepository
+           │    ├── wallet/          → WalletJpaAdapter, WalletJpaRepository
+           │    └── MoneyConverter
+           └── bcb/                  → CotacaoBcbAdapter, CotacaoBcbResponse
+```
 
 ---
 

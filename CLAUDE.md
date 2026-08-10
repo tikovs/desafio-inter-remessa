@@ -11,8 +11,8 @@ Este documento fica em português. Código (classes, métodos, variáveis, teste
 | `Remessa` | Transferência financeira internacional — "remittance" não captura a semântica de câmbio embutida |
 | `Pessoa`, `PessoaFisica`, `PessoaJuridica` | Conceitos legais brasileiros (PF/PJ); nenhum equivalente direto em inglês |
 | `Cotacao` | Taxa PTAX específica do BCB; "exchange rate" é genérico demais |
-| `Saldo` | Usado em exceções de domínio (`SaldoInsuficienteException`) |
-| `Limite` | Limite diário regulatório (`LimiteExcedidoException`) |
+| `Saldo` | Usado em exceções de domínio (`SaldoInsufficientException`) |
+| `Limite` | Limite diário regulatório (`LimiteExceededException`) |
 | `Carteira` | Mantida como `Wallet` por ser conceito genérico de infraestrutura financeira |
 
 CPF, CNPJ e Razão Social aparecem como campos/getters em português nos DTOs e nas entidades de domínio porque são siglas/termos regulatórios brasileiros sem tradução.
@@ -35,17 +35,27 @@ API REST de remessa financeira entre Pessoa Física (PF) e Pessoa Jurídica (PJ)
 
 ```
 com.inter.remessa
- ├── config              → OpenApiConfig, RedisConfig, BcbClientConfig, SecurityConfig
+ ├── config              → OpenApiConfig, RedisConfig, BcbClientConfig, SecurityConfig, DevDataSeeder
  ├── domain
- │    ├── model         → Pessoa, PessoaFisica, PessoaJuridica, Wallet, Remessa, Money, Cotacao
- │    └── exception      → SaldoInsuficienteException, LimiteExcedidoException, InvalidCpfException…
+ │    ├── model         → Pessoa, PessoaFisica, PessoaJuridica, Wallet, Remessa, Money, Cotacao, TipoPessoa
+ │    └── exception
+ │         ├── cotacao  → CotacaoUnavailableException
+ │         ├── pessoa   → EmailAlreadyRegisteredException, CpfAlreadyRegisteredException,
+ │         │               CnpjAlreadyRegisteredException, InvalidCpfException,
+ │         │               InvalidCnpjException, InvalidEmailException
+ │         └── remessa  → SaldoInsufficientException, LimiteExceededException,
+ │                         WalletNotFoundException
  ├── application
  │    ├── port
  │    │    ├── in        → RealizarRemessaUseCase
  │    │    └── out       → WalletRepositoryPort, CotacaoProviderPort, PessoaRepositoryPort,
  │    │                     RemessaRepositoryPort, CotacaoRepositoryPort
- │    ├── usecase        → RealizarRemessaService, CotacaoService (@Cacheable), CriarPessoaService
- │    └── validator      → RemessaValidator (interface), SaldoSuficienteValidator, LimiteDiarioValidator
+ │    ├── usecase
+ │    │    ├── cotacao   → CotacaoService (@Cacheable)
+ │    │    ├── pessoa    → CriarPessoaService, CriarPessoaFisicaCommand, CriarPessoaJuridicaCommand
+ │    │    └── remessa   → RealizarRemessaService, RealizarRemessaCommand
+ │    └── validator      → RemessaValidator (interface), RemessaValidationContext,
+ │                         SaldoSufficientValidator, LimiteDailyValidator
  └── adapter
       ├── in/web
       │    ├── pessoa    → PessoaController (POST /pessoas/fisica, POST /pessoas/juridica)
@@ -54,8 +64,14 @@ com.inter.remessa
       │    │                RemessaRequest, RemessaResponse
       │    └── GlobalExceptionHandler
       └── out
-           ├── persistence → JPA adapters: Remessa, Pessoa, Wallet, Cotacao
-           └── bcb         → CotacaoBcbAdapter (PTAX API OData)
+           ├── persistence
+           │    ├── cotacao  → CotacaoJpaAdapter, CotacaoJpaRepository
+           │    ├── pessoa   → PessoaJpaAdapter, PessoaJpaRepository,
+           │    │               PessoaFisicaJpaRepository, PessoaJuridicaJpaRepository
+           │    ├── remessa  → RemessaJpaAdapter, RemessaJpaRepository
+           │    ├── wallet   → WalletJpaAdapter, WalletJpaRepository
+           │    └── MoneyConverter  (AttributeConverter compartilhado)
+           └── bcb         → CotacaoBcbAdapter, CotacaoBcbResponse (PTAX API OData)
 ```
 
 **Decisões de nomenclatura:**
@@ -94,7 +110,8 @@ com.inter.remessa
 - **Email** normalizado para minúsculo no construtor — `User@test.com` e `user@test.com` seriam o mesmo endereço, mas a constraint `UNIQUE` do banco trataria como diferentes.
 - **CPF**: `^\d{11}$` — 11 dígitos numéricos, sem máscara.
 - **CNPJ**: `^[A-Z0-9]{12}\d{2}$` — formato alfanumérico vigente desde 31/07/2026 (IN RFB 2.229/2024). Regex `^\d{14}$` rejeitaria empresas recém-abertas.
-- Unicidade: `@Column(unique = true)` em `email`, `cpf` e `cnpj`; `CriarPessoaService` verifica antes do `save` e lança exceção de domínio clara (`EmailJaCadastradoException` etc.).
+- Unicidade: `@Column(unique = true)` em `email`, `cpf` e `cnpj`; `CriarPessoaService` verifica antes do `save` e lança exceção de domínio clara (`EmailAlreadyRegisteredException`, `CpfAlreadyRegisteredException`, `CnpjAlreadyRegisteredException`).
+- **`@Transactional`** em ambos os métodos `criar()` de `CriarPessoaService` — garante atomicidade entre o `save` da Pessoa e o `save` da Wallet (sem ele, falha no segundo `save` deixaria a Pessoa sem Wallet).
 - `PessoaJuridica` expõe `getRazaoSocial()` como alias semântico de `getNome()` — sem duplicar campo, sem mexer no mapeamento JPA.
 
 ## Pontos a discutir com avaliadores
@@ -118,6 +135,8 @@ com.inter.remessa
 
 - `CotacaoProviderPort` é a interface; `CotacaoService` implementa via `@Cacheable(value = "cotacoes", key = "#date")`.
 - Cache por data é seguro: cotação de fechamento PTAX não muda após publicação.
+- **Cotacao.data tem `@Column(unique = true)`** — evita duplicatas caso o cache seja contornado e `CotacaoService.save()` seja chamado duas vezes para o mesmo dia. O `CotacaoService` também verifica `findByData()` antes de salvar (idempotência em nível de aplicação).
+- `CotacaoRepositoryPort` expõe `findByData(LocalDate)` (não `findLatest()`) — consulta precisa pela data solicitada, sem ambiguidade sobre qual cotação é "a mais recente".
 - TTL padrão 24h, configurável via `cache.cotacoes.ttl-hours`.
 - **`BigDecimal` é `final`** — `GenericJacksonJsonRedisSerializer` usa `DefaultTyping.NON_FINAL` e não inclui `@class` para classes finais; Jackson deserializa o número como `Double` causando `ClassCastException`. Fix: `ObjectMapper` do Redis configurado com `USE_BIG_DECIMAL_FOR_FLOATS`.
 - Sem Redis, Spring usa `ConcurrentMapCacheManager` (fallback em memória, `@ConditionalOnMissingBean`).
@@ -147,7 +166,7 @@ Validators como Strategy: cada regra é um `@Component implements RemessaValidat
 
 ## Testes
 
-61 testes: unitários (`*Test.java`) + integração (`*IT.java`). Spring Boot 4.1 removeu os test slices clássicos (`@DataJpaTest`, `@WebMvcTest`, `@MockBean`). Padrão adotado: `@SpringBootTest(webEnvironment = MOCK ou RANDOM_PORT)` + `@Transactional` + `@TestConfiguration @Primary` para substituir beans por mocks.
+62 testes: unitários (`*Test.java`) + integração (`*IT.java`). Spring Boot 4.1 removeu os test slices clássicos (`@DataJpaTest`, `@WebMvcTest`, `@MockBean`). Padrão adotado: `@SpringBootTest(webEnvironment = MOCK ou RANDOM_PORT)` + `@Transactional` + `@TestConfiguration @Primary` para substituir beans por mocks.
 
 ### Nomenclatura
 
