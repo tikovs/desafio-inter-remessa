@@ -73,6 +73,179 @@ Ao subir, o `DevDataSeeder` cria 5 usuários e imprime no log os `curl`s prontos
 
 ---
 
+## Testando com curl — passo a passo
+
+Os curls abaixo são **idênticos** para Docker e para execução local. A única diferença é como a aplicação é iniciada:
+
+```bash
+# Docker (recomendado)
+docker compose up --build -d
+
+# Local
+./mvnw spring-boot:run
+```
+
+Aguarde a mensagem `Started RemessaApplication` no log antes de prosseguir. Os **5 usuários de teste** são criados automaticamente pelo `DevDataSeeder` (ids 1–5).
+
+---
+
+### 1. Cadastro de pessoas
+
+**Criar Pessoa Física**
+```bash
+curl -s -X POST http://localhost:8080/pessoas/fisica \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Ana Souza","email":"ana@example.com","senha":"senha123","cpf":"33344455566"}' \
+  | python3 -m json.tool
+# → 201: { "id": 6, "nome": "Ana Souza", "tipoPessoa": "FISICA" }
+```
+
+**Criar Pessoa Jurídica (CNPJ alfanumérico — IN RFB 2.229/2024)**
+```bash
+curl -s -X POST http://localhost:8080/pessoas/juridica \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Nova Tech SA","email":"novatech@example.com","senha":"senha123","cnpj":"ABCD1234567801"}' \
+  | python3 -m json.tool
+# → 201: { "id": 7, "nome": "Nova Tech SA", "tipoPessoa": "JURIDICA" }
+```
+
+**E-mail duplicado → 409**
+```bash
+curl -s -X POST http://localhost:8080/pessoas/fisica \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Outro","email":"ana@example.com","senha":"senha123","cpf":"99988877766"}' \
+  | python3 -m json.tool
+# → 409: { "detail": "Email já cadastrado: ana@example.com" }
+```
+
+**CPF inválido (formato errado) → 400**
+```bash
+curl -s -X POST http://localhost:8080/pessoas/fisica \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Teste","email":"teste@example.com","senha":"senha123","cpf":"123"}' \
+  | python3 -m json.tool
+# → 400: { "detail": "Invalid CPF: 123" }
+```
+
+**CNPJ inválido → 400**
+```bash
+curl -s -X POST http://localhost:8080/pessoas/juridica \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Empresa","email":"emp@example.com","senha":"senha123","cnpj":"invalido"}' \
+  | python3 -m json.tool
+# → 400: { "detail": "Invalid CNPJ: invalido" }
+```
+
+---
+
+### 2. Remessa com conversão BRL → USD
+
+**Remessa válida — PF envia R$ 500 (usa cotação PTAX do BCB em tempo real)**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":500}' \
+  | python3 -m json.tool
+# → 201: { "valorReais": 500.0, "valorDolares": 98.23, "cotacaoUtilizada": 5.0902, "status": "CONCLUIDA" }
+```
+
+---
+
+### 3. Saldo insuficiente → 422
+
+**Carlos (id=4) tem R$ 0 — qualquer remessa deve ser rejeitada**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":4,"destinatarioId":3,"valor":1}' \
+  | python3 -m json.tool
+# → 422: { "detail": "Saldo insuficiente para realizar a remessa" }
+```
+
+---
+
+### 4. Limite diário PF — R$ 10.000/dia
+
+**Passo 1 — envia R$ 10.000 (deve passar — João tem R$ 15.000)**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":10000}' \
+  | python3 -m json.tool
+# → 201: remessa concluída
+```
+
+**Passo 2 — tenta enviar R$ 1 a mais (limite esgotado) → 422**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":1,"destinatarioId":3,"valor":1}' \
+  | python3 -m json.tool
+# → 422: { "detail": "Limite diário de remessa excedido" }
+```
+
+---
+
+### 5. Limite diário PJ — R$ 50.000/dia
+
+**Passo 1 — envia R$ 50.000 (deve passar — Empresa tem R$ 55.000)**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":2,"destinatarioId":3,"valor":50000}' \
+  | python3 -m json.tool
+# → 201: remessa concluída
+```
+
+**Passo 2 — tenta enviar R$ 1 a mais → 422**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":2,"destinatarioId":3,"valor":1}' \
+  | python3 -m json.tool
+# → 422: { "detail": "Limite diário de remessa excedido" }
+```
+
+---
+
+### 6. Remessa entre tipos — PF → PJ e PJ → PF (ambos permitidos)
+
+> **Nota:** execute estes antes dos testes de limite acima, ou reinicie a aplicação para resetar o H2.
+
+**PF → PJ**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":1,"destinatarioId":5,"valor":100}' \
+  | python3 -m json.tool
+# → 201: remessa concluída
+```
+
+**PJ → PF**
+```bash
+curl -s -X POST http://localhost:8080/remessas \
+  -H "Content-Type: application/json" \
+  -d '{"remetenteId":2,"destinatarioId":3,"valor":100}' \
+  | python3 -m json.tool
+# → 201: remessa concluída
+```
+
+---
+
+### Reiniciar os dados de teste
+
+O H2 é em memória — reiniciar a aplicação limpa tudo e recria os 5 usuários do `DevDataSeeder`:
+
+```bash
+# Docker
+docker compose restart app
+
+# Local
+# Ctrl+C e ./mvnw spring-boot:run novamente
+```
+
+---
+
 ## Como executar os testes
 
 ```bash
