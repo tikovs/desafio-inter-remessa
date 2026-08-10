@@ -3,7 +3,6 @@ package com.inter.remessa.application.validator;
 import com.inter.remessa.domain.exception.remessa.SaldoInsufficientException;
 import com.inter.remessa.domain.model.Money;
 import com.inter.remessa.domain.model.TipoPessoa;
-import com.inter.remessa.domain.model.Wallet;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,10 +18,9 @@ class SaldoSufficientValidatorTest {
     @Test
     @DisplayName("Should not throw when wallet balance is greater than the remessa amount")
     void shouldNotThrowWhenBalanceCoversAmount() {
-        Wallet wallet = new Wallet(Money.ofReais(new BigDecimal("500.00")));
         RemessaValidationContext ctx = new RemessaValidationContext(
                 Money.ofReais(new BigDecimal("100.00")),
-                wallet,
+                Money.ofReais(new BigDecimal("500.00")),
                 Money.ofCents(0),
                 TipoPessoa.FISICA
         );
@@ -33,10 +31,9 @@ class SaldoSufficientValidatorTest {
     @Test
     @DisplayName("Should throw SaldoInsufficientException when balance is less than the remessa amount")
     void shouldThrowWhenBalanceIsInsufficient() {
-        Wallet wallet = new Wallet(Money.ofReais(new BigDecimal("50.00")));
         RemessaValidationContext ctx = new RemessaValidationContext(
                 Money.ofReais(new BigDecimal("100.00")),
-                wallet,
+                Money.ofReais(new BigDecimal("50.00")),
                 Money.ofCents(0),
                 TipoPessoa.FISICA
         );

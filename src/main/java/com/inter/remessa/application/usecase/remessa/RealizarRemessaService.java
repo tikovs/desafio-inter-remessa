@@ -49,10 +49,9 @@ public class RealizarRemessaService implements RealizarRemessaUseCase {
         Money totalHoje = remessaRepository.totalRemessasHoje(command.remetenteId(), hoje);
         RemessaValidationContext ctx = new RemessaValidationContext(
                 valorReais,
-                walletRemetente,
+                walletRemetente.getBalanceBrl(),
                 totalHoje,
                 walletRemetente.getPessoa().getType()
-
         );
         validators.forEach(v -> v.validate(ctx));
 

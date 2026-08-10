@@ -8,7 +8,7 @@ public class SaldoSufficientValidator implements RemessaValidator {
 
     @Override
     public void validate(RemessaValidationContext context) {
-        if (context.walletRemetente().getBalanceBrl().isLessThan(context.valor())) {
+        if (context.saldoRemetente().isLessThan(context.valor())) {
             throw new SaldoInsufficientException();
         }
     }
