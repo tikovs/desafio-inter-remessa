@@ -35,7 +35,9 @@ public class CotacaoService implements CotacaoProviderPort {
             LocalDate candidate = date.minusDays(i);
             Optional<BigDecimal> taxa = bcbAdapter.getCotacaoDolar(candidate);
             if (taxa.isPresent()) {
-                cotacaoRepository.save(new Cotacao(candidate, taxa.get()));
+                if (cotacaoRepository.findByData(candidate).isEmpty()) {
+                    cotacaoRepository.save(new Cotacao(candidate, taxa.get()));
+                }
                 return taxa.get();
             }
         }

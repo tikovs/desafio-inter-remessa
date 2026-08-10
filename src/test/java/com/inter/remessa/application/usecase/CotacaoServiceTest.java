@@ -28,6 +28,7 @@ class CotacaoServiceTest {
     void setUp() {
         bcbAdapter = mock(CotacaoBcbAdapter.class);
         cotacaoRepository = mock(CotacaoRepositoryPort.class);
+        when(cotacaoRepository.findByData(any(LocalDate.class))).thenReturn(Optional.empty());
         service = new CotacaoService(bcbAdapter, cotacaoRepository);
     }
 

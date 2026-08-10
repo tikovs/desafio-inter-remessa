@@ -4,6 +4,7 @@ import com.inter.remessa.application.port.out.CotacaoRepositoryPort;
 import com.inter.remessa.domain.model.Cotacao;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -21,7 +22,7 @@ class CotacaoJpaAdapter implements CotacaoRepositoryPort {
     }
 
     @Override
-    public Optional<Cotacao> findLatest() {
-        return repository.findFirstByOrderByDataDesc();
+    public Optional<Cotacao> findByData(LocalDate data) {
+        return repository.findByData(data);
     }
 }

@@ -16,6 +16,7 @@ public class Cotacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private LocalDate data;
 
     @Column(nullable = false, precision = 10, scale = 4)
