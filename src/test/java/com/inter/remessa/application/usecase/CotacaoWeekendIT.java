@@ -1,9 +1,7 @@
 package com.inter.remessa.application.usecase;
 
 import com.inter.remessa.adapter.out.bcb.CotacaoBcbAdapter;
-import com.inter.remessa.application.port.out.CotacaoRepositoryPort;
-import com.inter.remessa.domain.model.Cotacao;
-import jakarta.persistence.EntityManager;
+import com.inter.remessa.config.RedisConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,15 +15,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.inter.remessa.config.RedisConfig;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,10 +39,8 @@ class CotacaoWeekendIT {
     }
 
     @Autowired CotacaoService cotacaoService;
-    @Autowired CotacaoRepositoryPort cotacaoRepository;
     @Autowired CotacaoBcbAdapter bcbAdapter;
     @Autowired CacheManager cacheManager;
-    @Autowired EntityManager em;
 
     @BeforeEach
     void setUp() {
@@ -56,38 +49,47 @@ class CotacaoWeekendIT {
     }
 
     @Test
-    @DisplayName("Should return last saved cotação from database without calling BCB when requested on Saturday")
-    void shouldReturnLastCotacaoFromDatabaseWithoutCallingBcbOnSaturday() {
-        em.persist(new Cotacao(LocalDate.of(2024, 3, 15), new BigDecimal("5.1234")));
-        em.flush();
+    @DisplayName("Should walk back to Friday when requested on Saturday and BCB has no Saturday data")
+    void shouldReturnFridayRateWhenRequestedOnSaturday() {
+        LocalDate saturday = LocalDate.of(2024, 3, 16);
+        LocalDate friday = LocalDate.of(2024, 3, 15);
+        when(bcbAdapter.getCotacaoDolar(saturday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.1234")));
 
-        BigDecimal result = cotacaoService.getCotacaoDolar(LocalDate.of(2024, 3, 16)); // Saturday
+        BigDecimal result = cotacaoService.getCotacaoDolar(saturday);
 
         assertThat(result).isEqualByComparingTo(new BigDecimal("5.1234"));
-        verify(bcbAdapter, never()).getCotacaoDolar(any());
+        verify(bcbAdapter).getCotacaoDolar(friday);
     }
 
     @Test
-    @DisplayName("Should return last saved cotação from database without calling BCB when requested on Sunday")
-    void shouldReturnLastCotacaoFromDatabaseWithoutCallingBcbOnSunday() {
-        em.persist(new Cotacao(LocalDate.of(2024, 3, 15), new BigDecimal("5.0902")));
-        em.flush();
+    @DisplayName("Should walk back to Friday when requested on Sunday and BCB has no weekend data")
+    void shouldReturnFridayRateWhenRequestedOnSunday() {
+        LocalDate sunday = LocalDate.of(2024, 3, 17);
+        LocalDate saturday = LocalDate.of(2024, 3, 16);
+        LocalDate friday = LocalDate.of(2024, 3, 15);
+        when(bcbAdapter.getCotacaoDolar(sunday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(saturday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.0902")));
 
-        BigDecimal result = cotacaoService.getCotacaoDolar(LocalDate.of(2024, 3, 17)); // Sunday
+        BigDecimal result = cotacaoService.getCotacaoDolar(sunday);
 
         assertThat(result).isEqualByComparingTo(new BigDecimal("5.0902"));
-        verify(bcbAdapter, never()).getCotacaoDolar(any());
+        verify(bcbAdapter).getCotacaoDolar(friday);
     }
 
     @Test
-    @DisplayName("Should call BCB with nearest Friday when on weekend and database has no stored cotação")
-    void shouldCallBcbWithNearestFridayOnWeekendWhenDatabaseIsEmpty() {
+    @DisplayName("Should walk back to nearest available day when weekday PTAX has not been published yet")
+    void shouldWalkBackWhenWeekdayHasNoDataYet() {
+        LocalDate monday = LocalDate.of(2024, 3, 18);
         LocalDate friday = LocalDate.of(2024, 3, 15);
-        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(new BigDecimal("5.0500"));
+        when(bcbAdapter.getCotacaoDolar(monday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(monday.minusDays(1))).thenReturn(Optional.empty()); // Sunday
+        when(bcbAdapter.getCotacaoDolar(monday.minusDays(2))).thenReturn(Optional.empty()); // Saturday
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.0500")));
 
-        BigDecimal result = cotacaoService.getCotacaoDolar(LocalDate.of(2024, 3, 16)); // Saturday
+        BigDecimal result = cotacaoService.getCotacaoDolar(monday);
 
         assertThat(result).isEqualByComparingTo(new BigDecimal("5.0500"));
-        verify(bcbAdapter).getCotacaoDolar(friday);
     }
 }

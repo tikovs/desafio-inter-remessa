@@ -1,6 +1,5 @@
 package com.inter.remessa.adapter.out.bcb;
 
-import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,9 +10,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -46,9 +45,10 @@ class CotacaoBcbAdapterTest {
         );
         when(responseSpec.body(CotacaoBcbResponse.class)).thenReturn(fakeResponse);
 
-        BigDecimal result = adapter.getCotacaoDolar(LocalDate.of(2024, 1, 15));
+        Optional<BigDecimal> result = adapter.getCotacaoDolar(LocalDate.of(2024, 1, 15));
 
-        assertThat(result).isEqualByComparingTo(new BigDecimal("4.9725"));
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualByComparingTo(new BigDecimal("4.9725"));
     }
 
     @Test
@@ -62,18 +62,18 @@ class CotacaoBcbAdapterTest {
         adapter.getCotacaoDolar(LocalDate.of(2024, 3, 5));
 
         ArgumentCaptor<String> uriCaptor = ArgumentCaptor.forClass(String.class);
-        //noinspection unchecked
         verify(requestSpec).uri(uriCaptor.capture());
         assertThat(uriCaptor.getValue()).contains("03-05-2024");
     }
 
     @Test
-    @DisplayName("Should throw CotacaoIndisponiveException when BCB returns empty array")
-    void shouldThrowCotacaoIndisponiveExceptionWhenBcbReturnsEmptyArray() {
+    @DisplayName("Should return empty Optional when BCB returns empty array")
+    void shouldReturnEmptyOptionalWhenBcbReturnsEmptyArray() {
         when(responseSpec.body(CotacaoBcbResponse.class))
                 .thenReturn(new CotacaoBcbResponse(Collections.emptyList()));
 
-        assertThatThrownBy(() -> adapter.getCotacaoDolar(LocalDate.of(2024, 3, 15)))
-                .isInstanceOf(CotacaoIndisponiveException.class);
+        Optional<BigDecimal> result = adapter.getCotacaoDolar(LocalDate.of(2024, 3, 15));
+
+        assertThat(result).isEmpty();
     }
 }

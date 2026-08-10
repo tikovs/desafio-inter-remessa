@@ -31,10 +31,10 @@ class CotacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Should call BCB and save cotação to database when requested on a weekday")
+    @DisplayName("Should call BCB and save cotação when weekday returns data")
     void shouldCallBcbAndSaveCotacaoWhenWeekday() {
         LocalDate monday = LocalDate.of(2024, 3, 18);
-        when(bcbAdapter.getCotacaoDolar(monday)).thenReturn(new BigDecimal("5.10"));
+        when(bcbAdapter.getCotacaoDolar(monday)).thenReturn(Optional.of(new BigDecimal("5.10")));
 
         BigDecimal result = service.getCotacaoDolar(monday);
 
@@ -44,38 +44,12 @@ class CotacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Should return last cotação from database without calling BCB when requested on Saturday")
-    void shouldReturnLastCotacaoFromDatabaseWithoutCallingBcbOnSaturday() {
-        LocalDate saturday = LocalDate.of(2024, 3, 16);
-        Cotacao lastCotacao = new Cotacao(LocalDate.of(2024, 3, 15), new BigDecimal("5.05"));
-        when(cotacaoRepository.findLatest()).thenReturn(Optional.of(lastCotacao));
-
-        BigDecimal result = service.getCotacaoDolar(saturday);
-
-        assertThat(result).isEqualByComparingTo(new BigDecimal("5.05"));
-        verify(bcbAdapter, never()).getCotacaoDolar(any());
-    }
-
-    @Test
-    @DisplayName("Should return last cotação from database without calling BCB when requested on Sunday")
-    void shouldReturnLastCotacaoFromDatabaseWithoutCallingBcbOnSunday() {
-        LocalDate sunday = LocalDate.of(2024, 3, 17);
-        Cotacao lastCotacao = new Cotacao(LocalDate.of(2024, 3, 15), new BigDecimal("5.20"));
-        when(cotacaoRepository.findLatest()).thenReturn(Optional.of(lastCotacao));
-
-        BigDecimal result = service.getCotacaoDolar(sunday);
-
-        assertThat(result).isEqualByComparingTo(new BigDecimal("5.20"));
-        verify(bcbAdapter, never()).getCotacaoDolar(any());
-    }
-
-    @Test
-    @DisplayName("Should call BCB with nearest Friday when on Saturday and database is empty")
-    void shouldCallBcbWithNearestFridayOnSaturdayWhenDatabaseIsEmpty() {
+    @DisplayName("Should walk back to Friday when BCB has no data for Saturday")
+    void shouldWalkBackToFridayWhenSaturdayHasNoData() {
         LocalDate saturday = LocalDate.of(2024, 3, 16);
         LocalDate friday = LocalDate.of(2024, 3, 15);
-        when(cotacaoRepository.findLatest()).thenReturn(Optional.empty());
-        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(new BigDecimal("5.15"));
+        when(bcbAdapter.getCotacaoDolar(saturday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.15")));
 
         BigDecimal result = service.getCotacaoDolar(saturday);
 
@@ -85,17 +59,43 @@ class CotacaoServiceTest {
     }
 
     @Test
-    @DisplayName("Should call BCB with nearest Friday when on Sunday and database is empty")
-    void shouldCallBcbWithNearestFridayOnSundayWhenDatabaseIsEmpty() {
+    @DisplayName("Should walk back two days to Friday when Sunday and Saturday both have no data")
+    void shouldWalkBackTwoDaysToFridayWhenSundayAndSaturdayHaveNoData() {
         LocalDate sunday = LocalDate.of(2024, 3, 17);
+        LocalDate saturday = LocalDate.of(2024, 3, 16);
         LocalDate friday = LocalDate.of(2024, 3, 15);
-        when(cotacaoRepository.findLatest()).thenReturn(Optional.empty());
-        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(new BigDecimal("5.15"));
+        when(bcbAdapter.getCotacaoDolar(sunday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(saturday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.15")));
 
         BigDecimal result = service.getCotacaoDolar(sunday);
 
         assertThat(result).isEqualByComparingTo(new BigDecimal("5.15"));
         verify(bcbAdapter).getCotacaoDolar(friday);
         verify(cotacaoRepository).save(any(Cotacao.class));
+    }
+
+    @Test
+    @DisplayName("Should walk back to last available day when weekday PTAX has not been published yet")
+    void shouldWalkBackToPreviousDayWhenWeekdayHasNoDataYet() {
+        LocalDate monday = LocalDate.of(2024, 3, 18);
+        LocalDate friday = LocalDate.of(2024, 3, 15);
+        when(bcbAdapter.getCotacaoDolar(any())).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.00")));
+
+        BigDecimal result = service.getCotacaoDolar(monday);
+
+        assertThat(result).isEqualByComparingTo(new BigDecimal("5.00"));
+        verify(cotacaoRepository).save(any(Cotacao.class));
+    }
+
+    @Test
+    @DisplayName("Should throw CotacaoIndisponiveException when all fallback days return no data")
+    void shouldThrowExceptionWhenAllFallbackDaysEmpty() {
+        LocalDate date = LocalDate.of(2024, 3, 18);
+        when(bcbAdapter.getCotacaoDolar(any())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getCotacaoDolar(date))
+                .isInstanceOf(CotacaoIndisponiveException.class);
     }
 }

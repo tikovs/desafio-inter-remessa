@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,7 +55,7 @@ class CotacaoCacheIT {
     @DisplayName("Should call BCB only once for the same date when cache is hit on second call")
     void shouldCallBcbOnlyOnceWhenCacheIsHitForSameDate() {
         LocalDate friday = LocalDate.of(2024, 3, 15);
-        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(new BigDecimal("5.1234"));
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.1234")));
 
         cotacaoService.getCotacaoDolar(friday);
         cotacaoService.getCotacaoDolar(friday);
@@ -66,7 +67,7 @@ class CotacaoCacheIT {
     @DisplayName("Should return the same rate on second call without calling BCB again")
     void shouldReturnCachedRateOnSecondCall() {
         LocalDate friday = LocalDate.of(2024, 3, 15);
-        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(new BigDecimal("5.1234"));
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.1234")));
 
         BigDecimal first = cotacaoService.getCotacaoDolar(friday);
         BigDecimal second = cotacaoService.getCotacaoDolar(friday);
@@ -80,8 +81,8 @@ class CotacaoCacheIT {
     void shouldCallBcbForEachDifferentDate() {
         LocalDate monday = LocalDate.of(2024, 3, 18);
         LocalDate tuesday = LocalDate.of(2024, 3, 19);
-        when(bcbAdapter.getCotacaoDolar(monday)).thenReturn(new BigDecimal("5.10"));
-        when(bcbAdapter.getCotacaoDolar(tuesday)).thenReturn(new BigDecimal("5.20"));
+        when(bcbAdapter.getCotacaoDolar(monday)).thenReturn(Optional.of(new BigDecimal("5.10")));
+        when(bcbAdapter.getCotacaoDolar(tuesday)).thenReturn(Optional.of(new BigDecimal("5.20")));
 
         cotacaoService.getCotacaoDolar(monday);
         cotacaoService.getCotacaoDolar(tuesday);
@@ -91,14 +92,15 @@ class CotacaoCacheIT {
     }
 
     @Test
-    @DisplayName("Should cache weekend rate and not call BCB on second weekend request")
+    @DisplayName("Should cache weekend rate using requested date as key and not call BCB on second request")
     void shouldCacheWeekendRateOnSecondCall() {
         LocalDate friday = LocalDate.of(2024, 3, 15);
         LocalDate saturday = LocalDate.of(2024, 3, 16);
-        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(new BigDecimal("5.0500"));
+        when(bcbAdapter.getCotacaoDolar(saturday)).thenReturn(Optional.empty());
+        when(bcbAdapter.getCotacaoDolar(friday)).thenReturn(Optional.of(new BigDecimal("5.0500")));
 
-        cotacaoService.getCotacaoDolar(saturday); // miss — chama BCB com sexta
-        cotacaoService.getCotacaoDolar(saturday); // hit — não chama BCB
+        cotacaoService.getCotacaoDolar(saturday); // miss — walks back to Friday
+        cotacaoService.getCotacaoDolar(saturday); // hit — cache key is Saturday
 
         verify(bcbAdapter, times(1)).getCotacaoDolar(friday);
     }
