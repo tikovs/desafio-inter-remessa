@@ -14,6 +14,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
@@ -31,12 +32,18 @@ public class RedisConfig {
             ObjectMapper objectMapper,
             @Value("${cache.cotacoes.ttl-hours:24}") long cotacoesTtlHours) {
 
+        // BigDecimal is final — GenericJacksonJsonRedisSerializer's NON_FINAL typing skips it,
+        // deserializing numbers as Double by default. USE_BIG_DECIMAL_FOR_FLOATS forces BigDecimal.
+        ObjectMapper redisMapper = objectMapper.rebuild()
+                .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                .build();
+
         RedisCacheConfiguration cotacoesConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(cotacoesTtlHours))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair
                         .fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new GenericJacksonJsonRedisSerializer(objectMapper)))
+                        .fromSerializer(new GenericJacksonJsonRedisSerializer(redisMapper)))
                 .disableCachingNullValues();
 
         return RedisCacheManager.builder(connectionFactory)
