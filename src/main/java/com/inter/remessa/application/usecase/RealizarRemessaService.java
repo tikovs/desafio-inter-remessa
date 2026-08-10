@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -38,7 +39,7 @@ public class RealizarRemessaService implements RealizarRemessaUseCase {
     @Override
     @Transactional
     public Remessa realizar(RealizarRemessaCommand command) {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
         Money valorReais = Money.ofReais(command.valorReais());
 
         // 1. Busca carteira do remetente
@@ -51,6 +52,7 @@ public class RealizarRemessaService implements RealizarRemessaUseCase {
                 walletRemetente,
                 totalHoje,
                 walletRemetente.getPessoa().getType()
+
         );
         validators.forEach(v -> v.validate(ctx));
 

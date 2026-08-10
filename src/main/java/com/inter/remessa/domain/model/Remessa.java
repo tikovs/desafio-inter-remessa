@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 public class Remessa {
@@ -43,7 +44,7 @@ public class Remessa {
         this.valorReais = valorReais;
         this.valorDolares = valorDolares;
         this.cotacao = cotacao;
-        this.dataHora = LocalDateTime.now();
+        this.dataHora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
     }
 
     public Long getId() { return id; }
