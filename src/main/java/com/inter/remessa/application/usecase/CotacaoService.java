@@ -11,14 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.util.Optional;
 
 @Service
 @Transactional
 public class CotacaoService implements CotacaoProviderPort {
+
+    private static final int MAX_FALLBACK_DAYS = 10;
 
     private final CotacaoBcbAdapter bcbAdapter;
     private final CotacaoRepositoryPort cotacaoRepository;
@@ -31,29 +31,14 @@ public class CotacaoService implements CotacaoProviderPort {
     @Override
     @Cacheable(value = RedisConfig.CACHE_COTACOES, key = "#date")
     public BigDecimal getCotacaoDolar(LocalDate date) {
-        if (isWeekend(date)) {
-            return getCotacaoParaFimDeSemana(date);
+        for (int i = 0; i <= MAX_FALLBACK_DAYS; i++) {
+            LocalDate candidate = date.minusDays(i);
+            Optional<BigDecimal> taxa = bcbAdapter.getCotacaoDolar(candidate);
+            if (taxa.isPresent()) {
+                cotacaoRepository.save(new Cotacao(candidate, taxa.get()));
+                return taxa.get();
+            }
         }
-        return fetchFromBcbAndSave(date);
-    }
-
-    private BigDecimal getCotacaoParaFimDeSemana(LocalDate date) {
-        Optional<Cotacao> saved = cotacaoRepository.findLatest();
-        if (saved.isPresent()) {
-            return saved.get().getTaxa();
-        }
-        LocalDate friday = date.with(TemporalAdjusters.previous(DayOfWeek.FRIDAY));
-        return fetchFromBcbAndSave(friday);
-    }
-
-    private BigDecimal fetchFromBcbAndSave(LocalDate date) {
-        BigDecimal taxa = bcbAdapter.getCotacaoDolar(date);
-        cotacaoRepository.save(new Cotacao(date, taxa));
-        return taxa;
-    }
-
-    private boolean isWeekend(LocalDate date) {
-        DayOfWeek day = date.getDayOfWeek();
-        return day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY;
+        throw new CotacaoIndisponiveException(date.toString());
     }
 }

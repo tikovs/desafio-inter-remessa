@@ -1,6 +1,5 @@
 package com.inter.remessa.adapter.out.bcb;
 
-import com.inter.remessa.domain.exception.CotacaoIndisponiveException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -8,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class CotacaoBcbAdapter {
@@ -20,7 +20,7 @@ public class CotacaoBcbAdapter {
         this.restClient = bcbRestClient;
     }
 
-    public BigDecimal getCotacaoDolar(LocalDate date) {
+    public Optional<BigDecimal> getCotacaoDolar(LocalDate date) {
         String formattedDate = date.format(BCB_DATE_FORMAT);
         String path = "/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='" + formattedDate + "'&$format=json";
         CotacaoBcbResponse response = restClient.get()
@@ -29,8 +29,8 @@ public class CotacaoBcbAdapter {
                 .body(CotacaoBcbResponse.class);
         List<CotacaoBcbResponse.CotacaoItem> items = (response != null) ? response.value() : List.of();
         if (items == null || items.isEmpty()) {
-            throw new CotacaoIndisponiveException(formattedDate);
+            return Optional.empty();
         }
-        return items.getFirst().cotacaoCompra();
+        return Optional.of(items.getFirst().cotacaoCompra());
     }
 }
